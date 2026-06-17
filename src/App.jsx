@@ -1,0 +1,39 @@
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import LandingPage from "./pages/LandingPage";
+import LoginPage from "./pages/LoginPage";
+import Dashboard from "./pages/Dashboard";
+import OrdersReport from "./pages/OrdersReport";
+import Layout from "./components/Layout";
+import MasterManager from "./pages/MasterManager";
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        {/* Pages without Sidebar (Public) */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<LoginPage />} />
+
+        {/* Pages WITH Sidebar (Protected/Layout) */}
+        <Route element={<Layout />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/orders-report" element={<OrdersReport />} />
+
+          {/* DYNAMIC MASTER ROUTE: Ye ek akela route Firm, Location aur Merchant teeno ko handle kar lega */}
+          <Route path="/master/:type" element={<MasterManager />} />
+
+          {/* Default redirect to dashboard if someone types wrong URL inside layout */}
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Route>
+      </Routes>
+    </Router>
+  );
+}
+
+export default App;
