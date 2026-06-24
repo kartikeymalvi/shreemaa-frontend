@@ -1,0 +1,251 @@
+/* Login.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+.login-page-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f1f5f9; 
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  padding: 2rem;
+}
+
+/* --- Animations Keyframes --- */
+@keyframes fadeScaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideUpFade {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slowBreathe {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
+/* Main White Card with Intro Animation */
+.login-card {
+  display: flex;
+  background: #ffffff;
+  border-radius: 30px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.08);
+  width: 100%;
+  max-width: 1050px;
+  min-height: 600px;
+  
+  /* Card Animation */
+  opacity: 0;
+  animation: fadeScaleIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* --- Left Side: Login Form --- */
+.login-form-section {
+  flex: 1;
+  padding: 3.5rem 4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Staggered Waterfall Animations for Form Elements */
+.login-logo {
+  width: 90px;
+  margin-bottom: 1.5rem;
+  mix-blend-mode: multiply;
+  opacity: 0;
+  animation: slideUpFade 0.6s ease forwards 0.2s; /* 0.2s delay */
+}
+
+.welcome-text {
+  color: #64748b;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  opacity: 0;
+  animation: slideUpFade 0.6s ease forwards 0.3s;
+}
+
+.login-title {
+  font-size: 2.8rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 2rem;
+  letter-spacing: -1px;
+  opacity: 0;
+  animation: slideUpFade 0.6s ease forwards 0.4s;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-group {
+  margin-bottom: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  animation: slideUpFade 0.6s ease forwards;
+}
+
+/* Inputs pe alag-alag delay lagaya hai */
+.input-group:nth-of-type(1) { animation-delay: 0.5s; }
+.input-group:nth-of-type(2) { animation-delay: 0.6s; }
+
+.label-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.input-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.forgot-link {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.forgot-link:hover { color: #a66a4f; }
+
+.login-input {
+  background-color: #f1f5f9; /* Soft pastel greyish-blue */
+  border: 2px solid transparent;
+  padding: 14px 18px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #1e293b;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.login-input:focus {
+  background-color: #ffffff;
+  border: 2px solid #ce8884; /* Rose gold border on click */
+  box-shadow: 0 0 0 4px rgba(206, 136, 132, 0.1);
+}
+
+.login-input::placeholder { color: #94a3b8; font-size: 0.85rem; }
+
+.submit-btn {
+  background: #ce8884; 
+  color: white;
+  border: none;
+  padding: 14px 35px;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 1rem;
+  align-self: flex-start;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(206, 136, 132, 0.3);
+  
+  /* Animation */
+  opacity: 0;
+  animation: slideUpFade 0.6s ease forwards 0.7s;
+}
+
+.submit-btn:hover {
+  background: #b87575;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(206, 136, 132, 0.4);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 2.5rem 0 1.5rem 0;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  opacity: 0;
+  animation: slideUpFade 0.6s ease forwards 0.8s;
+}
+
+.divider::before, .divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.divider:not(:empty)::before { margin-right: 1em; }
+.divider:not(:empty)::after { margin-left: 1em; }
+
+.social-login {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  opacity: 0;
+  animation: slideUpFade 0.6s ease forwards 0.9s;
+}
+
+.social-btn {
+  flex: 1;
+  border: 1px solid #cbd5e1;
+  background: white;
+  border-radius: 50px;
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.social-btn:hover { 
+  background: #f8fafc; 
+  border-color: #94a3b8;
+  transform: translateY(-2px);
+}
+.social-icon { width: 22px; height: 22px; }
+
+.signup-text {
+  font-size: 0.85rem;
+  color: #64748b;
+  opacity: 0;
+  animation: slideUpFade 0.6s ease forwards 1s;
+}
+
+.signup-link {
+  color: #ce8884;
+  text-decoration: none;
+  font-weight: 600;
+  margin-left: 5px;
+  transition: color 0.3s;
+}
+
+.signup-link:hover { color: #b87575; }
+
+/* --- Right Side: Illustration Panel --- */
+.login-image-section {
+  flex: 1;
+  margin: 1.5rem;
+  border-radius: 24px;
+  overflow: hidden; /* Bahut zaroori hai zoom effect ke liye */
+  position: relative;
+  
+  /* Right side card entry */
+  opacity: 0;
+  animation: fadeScaleIn 1s ease forwards 0.3s;
+}
+
+/* Image continuous slow zooming */
+.illustration-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  animation: slowBreathe 20s infinite ease-in-out; /* Dheemi saans jaisa effect */
+}

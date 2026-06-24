@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import OrdersReport from "./pages/OrdersReport";
 import Layout from "./components/Layout";
 import MasterManager from "./pages/MasterManager";
+import InvoiceShipment from "./pages/InvoiceShipment";
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
 
           {/* Default redirect to dashboard if someone types wrong URL inside layout */}
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/invoice-shipment" element={<InvoiceShipment />} />
         </Route>
       </Routes>
     </Router>

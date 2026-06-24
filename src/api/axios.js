@@ -51,6 +51,7 @@ import axios from "axios";
 
 const api = axios.create({
   baseURL: "https://shreemaa-backend.onrender.com/api/",
+  // baseURL: "http://localhost:8000/api/",
 });
 
 // REQUEST INTERCEPTOR

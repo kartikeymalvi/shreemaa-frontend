@@ -180,7 +180,7 @@ export default function Dashboard() {
               <table className="w-full text-left">
                 <thead className="bg-white sticky top-0 shadow-sm text-gray-500 text-xs uppercase font-bold">
                   <tr>
-                    <th className="px-6 py-4">ID</th>
+                    <th className="px-6 py-4">S.NO</th>
                     <th className="px-6 py-4">Username</th>
                     <th className="px-6 py-4">Role</th>
                     <th className="px-6 py-4">Joined Date</th>
