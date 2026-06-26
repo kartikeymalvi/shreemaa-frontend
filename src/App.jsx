@@ -12,29 +12,43 @@ import OrdersReport from "./pages/OrdersReport";
 import Layout from "./components/Layout";
 import MasterManager from "./pages/MasterManager";
 import InvoiceShipment from "./pages/InvoiceShipment";
+import { Toaster } from "react-hot-toast";
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        {/* Pages without Sidebar (Public) */}
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LoginPage />} />
+    <>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            fontSize: "14px",
+            fontWeight: "600",
+            borderRadius: "10px",
+          },
+        }}
+      />
+      <Router>
+        <Routes>
+          {/* Pages without Sidebar (Public) */}
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
 
-        {/* Pages WITH Sidebar (Protected/Layout) */}
-        <Route element={<Layout />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/orders-report" element={<OrdersReport />} />
+          {/* Pages WITH Sidebar (Protected/Layout) */}
+          <Route element={<Layout />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/orders-report" element={<OrdersReport />} />
 
-          {/* DYNAMIC MASTER ROUTE: Ye ek akela route Firm, Location aur Merchant teeno ko handle kar lega */}
-          <Route path="/master/:type" element={<MasterManager />} />
+            {/* DYNAMIC MASTER ROUTE: Ye ek akela route Firm, Location aur Merchant teeno ko handle kar lega */}
+            <Route path="/master/:type" element={<MasterManager />} />
 
-          {/* Default redirect to dashboard if someone types wrong URL inside layout */}
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/invoice-shipment" element={<InvoiceShipment />} />
-        </Route>
-      </Routes>
-    </Router>
+            {/* Default redirect to dashboard if someone types wrong URL inside layout */}
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/invoice-shipment" element={<InvoiceShipment />} />
+          </Route>
+        </Routes>
+      </Router>
+    </>
   );
 }
 
