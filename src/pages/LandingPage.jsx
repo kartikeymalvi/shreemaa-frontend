@@ -121,7 +121,14 @@ const LandingPage = () => {
         </div>
         <div className="preview-body">
           <p>
-            User login and dashboard access are secured.
+            DEMO ADMIN LOGIN ---------
+            Username : admin,
+            Password:1234,--------------------
+           -------- DEMO User Login------
+            Username : user,
+            Password : 1234
+
+
           </p>
 
           {/* <div className="preview-skeleton-cards">
