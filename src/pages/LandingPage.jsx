@@ -120,7 +120,7 @@ const LandingPage = () => {
           <h2>Welcome !!!</h2>
         </div>
         <div className="preview-body">
-          <p>
+          {/* <p>
             DEMO ADMIN LOGIN ---------
             Username : admin,
             Password:1234,--------------------
@@ -129,7 +129,7 @@ const LandingPage = () => {
             Password : 1234
 
 
-          </p>
+          </p> */}
 
           {/* <div className="preview-skeleton-cards">
             <div className="skeleton-card"></div>
