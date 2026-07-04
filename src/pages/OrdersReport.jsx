@@ -1654,6 +1654,8 @@ export default function OrdersReport() {
     show_payment_amount: true,
     show_card_offer: true,
   });
+  // bulk delete state 
+  const [selectedIds, setSelectedIds] = useState([]);
 
   useEffect(() => {
     const fetchMasters = async () => {
@@ -1732,6 +1734,52 @@ export default function OrdersReport() {
       ][dateObj.getMonth()];
     }
     setHeaderData(newHeader);
+  };
+
+  //Bulk delete  function  
+  const handleRowSelect = (id) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  // Select All Rows (Current Page)
+  const handleSelectAll = () => {
+    if (orders.length > 0 && selectedIds.length === orders.length) {
+      setSelectedIds([]); // Agar saare selected hain, toh sabko uncheck karo
+    } else {
+      setSelectedIds(orders.map((order) => order.id)); // Warna sabko select kar lo
+    }
+  };
+
+  // Bulk Delete API Call
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return Swal.fire("Select records first!");
+
+    const confirm = await Swal.fire({
+      title: "Delete Multiple Records?",
+      text: `You are permanently deleting ${selectedIds.length} orders.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      confirmButtonText: "Yes, delete!",
+    });
+
+    if (confirm.isConfirmed) {
+      try {
+        setLoading(true);
+        // API endpoint check kar lena yahi hai na
+        await api.post("reports/orders/bulk-delete/", { ids: selectedIds });
+        Swal.fire("Deleted!", "Orders have been deleted.", "success");
+        setSelectedIds([]);
+        fetchData(); // Table reload karne ke liye
+      } catch (error) {
+        console.error("Delete Error:", error);
+        Swal.fire("Error", "Deletion failed.", "error");
+      } finally {
+        setLoading(false);
+      }
+    }
   };
 
   const handleItemChange = (index, e) => {
@@ -2042,6 +2090,17 @@ export default function OrdersReport() {
           >
             <i className="fas fa-plus mr-2"></i> New Entry
           </button>
+          {role === "ADMIN" && selectedIds.length > 0 && (
+            <button
+              // OrderReport file me: onClick={() => handleBulkDelete("reports/orders/bulk-delete/")}
+              // InvoiceShipment file me: onClick={() => handleBulkDelete("reports/invoices/bulk-delete/")}
+              onClick={() => handleBulkDelete("reports/invoices/bulk-delete/")}
+              className="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl font-extrabold shadow-lg transition flex items-center border border-red-500 animate-in zoom-in"
+            >
+              <i className="fas fa-trash-alt mr-2"></i> Delete (
+              {selectedIds.length})
+            </button>
+          )}
 
           <button
             onClick={() => setUploadModalOpen(true)}
@@ -2066,6 +2125,20 @@ export default function OrdersReport() {
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-100 text-slate-500 text-xs font-bold uppercase tracking-wider sticky top-0 z-10">
+                {role === "ADMIN" && (
+                  <th className="p-4 w-10 text-center">
+                    <input
+                      type="checkbox"
+                      onChange={handleSelectAll}
+                      checked={
+                        orders.length > 0 &&
+                        selectedIds.length === orders.length
+                      }
+                      className="w-4 h-4 rounded cursor-pointer accent-teal-600"
+                    />
+                  </th>
+                )}
+
                 <th className="p-4 w-12 text-center">S.No</th>
                 {showCol("show_order_id") && <th className="p-4">Order_ID</th>}
                 {showCol("show_txn_date") && <th className="p-4">Txn Date</th>}
@@ -2126,6 +2199,17 @@ export default function OrdersReport() {
                       key={order?.id || index}
                       className="hover:bg-slate-50/50 transition-colors"
                     >
+                      {role === "ADMIN" && (
+                        <td className="p-4 text-center">
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.includes(order.id)}
+                            onChange={() => handleRowSelect(order.id)}
+                            className="w-4 h-4 rounded cursor-pointer accent-teal-600"
+                          />
+                        </td>
+                      )}
+
                       <td className="p-4 text-center font-mono text-xs font-bold text-slate-400">
                         {((currentPage - 1) * 50 + index + 1)
                           .toString()

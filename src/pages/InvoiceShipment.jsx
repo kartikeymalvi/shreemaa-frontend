@@ -1485,6 +1485,9 @@ export default function InvoiceShipment() {
   const [masterFirms, setMasterFirms] = useState([]);
   const [masterLocations, setMasterLocations] = useState([]);
 
+  // bult delete states 
+  const [selectedIds, setSelectedIds] = useState([]);
+
   useEffect(() => {
     const fetchMasters = async () => {
       try {
@@ -1541,6 +1544,53 @@ export default function InvoiceShipment() {
       fetchData();
     } catch (error) {
       Swal.fire("Failed to save view.");
+    }
+  };
+
+
+  const handleRowSelect = (id) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
+    );
+  };
+
+  const handleSelectAll = (currentDataArray) => {
+    // Data array pass karein (orders ya shipments)
+    if (
+      selectedIds.length === currentDataArray.length &&
+      currentDataArray.length > 0
+    ) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(currentDataArray.map((item) => item.id));
+    }
+  };
+  // Bulk delete records function 
+  const handleBulkDelete = async (apiEndpoint) => {
+    if (selectedIds.length === 0) return Swal.fire("Select records first!");
+
+    const confirm = await Swal.fire({
+      title: "Delete Multiple Records?",
+      text: `You are permanently deleting ${selectedIds.length} records.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      confirmButtonText: "Yes, delete!",
+    });
+
+    if (confirm.isConfirmed) {
+      try {
+        setLoading(true);
+        // Api endpoint dynamically pass hoga ("reports/orders/bulk-delete/" ya "reports/invoices/bulk-delete/")
+        await api.post(apiEndpoint, { ids: selectedIds });
+        Swal.fire("Deleted!", "Records have been deleted.", "success");
+        setSelectedIds([]);
+        fetchData(); // Table refresh
+      } catch (error) {
+        Swal.fire("Error", "Deletion failed.", "error");
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -1944,6 +1994,17 @@ export default function InvoiceShipment() {
           >
             <i className="fas fa-plus-circle mr-2 text-teal-600"></i> New Entry
           </button>
+          {role === "ADMIN" && selectedIds.length > 0 && (
+            <button
+              // OrderReport file me: onClick={() => handleBulkDelete("reports/orders/bulk-delete/")}
+              // InvoiceShipment file me: onClick={() => handleBulkDelete("reports/invoices/bulk-delete/")}
+              onClick={() => handleBulkDelete("reports/invoices/bulk-delete/")}
+              className="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl font-extrabold shadow-lg transition flex items-center border border-red-500 animate-in zoom-in"
+            >
+              <i className="fas fa-trash-alt mr-2"></i> Delete (
+              {selectedIds.length})
+            </button>
+          )}
 
           <button
             onClick={() => setUploadModalOpen(true)}
@@ -1975,6 +2036,20 @@ export default function InvoiceShipment() {
             <table className="w-full text-left border-collapse whitespace-nowrap">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 text-[11px] font-extrabold uppercase tracking-wider sticky top-0 z-10">
+                  {role === "ADMIN" && (
+                    <th className="p-4 w-10 text-center">
+                      <input
+                        type="checkbox"
+                        // Dhyan dein: InvoiceShipment me 'shipments' aur OrderReport me 'orders' pass karein
+                        onChange={() => handleSelectAll(shipments)}
+                        checked={
+                          shipments.length > 0 &&
+                          selectedIds.length === shipments.length
+                        }
+                        className="w-4 h-4 rounded cursor-pointer accent-teal-600"
+                      />
+                    </th>
+                  )}
                   <th className="p-4 w-12 text-center">S.No</th>
                   {showCol("show_order_id") && (
                     <th className="p-4">Order ID</th>
@@ -2061,6 +2136,17 @@ export default function InvoiceShipment() {
                         key={ship.id}
                         className="hover:bg-slate-50/50 transition-colors border-b border-slate-100"
                       >
+                        {role === "ADMIN" && (
+                          <td className="p-4 text-center">
+                            <input
+                              type="checkbox"
+                              checked={selectedIds.includes(ship.id)}
+                              onChange={() => handleRowSelect(ship.id)}
+                              className="w-4 h-4 rounded cursor-pointer accent-teal-600"
+                            />
+                          </td>
+                        )}
+
                         <td className="p-4 text-center font-mono text-xs font-bold text-slate-400">
                           {((currentPage - 1) * 50 + index + 1)
                             .toString()
