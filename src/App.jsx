@@ -31,7 +31,7 @@ function App() {
       <Router>
         <Routes>
           {/* Pages without Sidebar (Public) */}
-          <Route path="/" element={<LandingPage />} />
+          <Route path="/" element={<LoginPage />} />
           <Route path="/login" element={<LoginPage />} />
 
           {/* Pages WITH Sidebar (Protected/Layout) */}
