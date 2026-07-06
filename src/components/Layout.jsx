@@ -201,6 +201,7 @@
 // }
 import React from "react";
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
+import logo from "../assets/logo.png";
 
 export default function Layout() {
   const navigate = useNavigate();
@@ -218,11 +219,36 @@ export default function Layout() {
     <div className="flex h-screen bg-gray-50 font-sans">
       {/* --- SHRI MAA GROUP SIDEBAR (Slate Theme) --- */}
       <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col z-20 border-r border-slate-800">
-        <div className="h-16 flex items-center px-6 bg-slate-950 border-b border-slate-800/50">
-          <span className="text-xl font-bold tracking-widest text-white flex items-center gap-2">
-            <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-            SHRI MAA
-          </span>
+        {/* --- BRANDING / LOGO SECTION --- */}
+        {/* --- BRANDING / LOGO SECTION --- */}
+        <div className="h-20 flex items-center px-5 bg-slate-950 border-b border-slate-800/50 shadow-md">
+          <Link
+            to="/dashboard"
+            className="flex items-center gap-3 cursor-pointer group w-full"
+          >
+            {/* 1. Clean Circular Logo Badge */}
+            <div className="flex-shrink-0 bg-white p-1 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.5)] group-hover:shadow-[0_0_15px_rgba(245,158,11,0.3)] group-hover:scale-105 transition-all duration-300 flex items-center justify-center w-11 h-11">
+              <img
+                src={logo}
+                alt="Shri Maa"
+                className="w-full h-full object-contain rounded-full"
+              />
+            </div>
+
+            {/* 2. Text & Blinking Dots */}
+            <div className="flex items-center gap-2.5">
+              <span className="text-s font-black  text-white uppercase group-hover:text-amber-500 transition-colors">
+                Shri Maa Group
+              </span>
+              <div className="flex gap-1.5 mt-0.5">
+                <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(245,158,11,0.8)]"></div>
+                <div
+                  className="w-2 h-2 bg-teal-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(45,212,191,0.8)]"
+                  style={{ animationDelay: "0.5s" }}
+                ></div>
+              </div>
+            </div>
+          </Link>
         </div>
 
         <nav className="flex-1 py-6 overflow-y-auto custom-scrollbar">
