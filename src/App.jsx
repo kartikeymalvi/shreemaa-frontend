@@ -13,6 +13,7 @@ import Layout from "./components/Layout";
 import MasterManager from "./pages/MasterManager";
 import InvoiceShipment from "./pages/InvoiceShipment";
 import { Toaster } from "react-hot-toast";
+import TrackId from "./pages/TrackId";
 
 function App() {
   return (
@@ -45,6 +46,7 @@ function App() {
             {/* Default redirect to dashboard if someone types wrong URL inside layout */}
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
             <Route path="/invoice-shipment" element={<InvoiceShipment />} />
+            <Route path="track-id" element={<TrackId />} />
           </Route>
         </Routes>
       </Router>

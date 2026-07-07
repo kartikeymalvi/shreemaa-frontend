@@ -331,6 +331,29 @@ export default function Layout() {
             Shipment
           </Link>
 
+          {/* Track id button */}
+
+          {/* Track ID Menu Item */}
+          <Link
+            to="/track-id"
+            className={`flex items-center gap-3 px-5 py-3 transition-all duration-200 cursor-pointer ${
+              location.pathname.includes("/track-id")
+                ? "border-amber-500 bg-slate-900/50"
+                : "border-transparent hover:bg-slate-800/30"
+            }`}
+          >
+            <div
+              className={`w-6 flex justify-center ${location.pathname.includes("/track-id") ? "text-amber-500" : "text-slate-400"}`}
+            >
+              <i className="fas fa-location-crosshairs text-sm"></i>
+            </div>
+            <span
+              className={`text-[12.5px] font-bold tracking-wide ${location.pathname.includes("/track-id") ? "text-sm" : "text-slate-300"}`}
+            >
+              Track ID
+            </span>
+          </Link>
+
           {/* REFUND LINK */}
           <Link
             to="/refund"

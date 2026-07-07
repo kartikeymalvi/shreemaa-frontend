@@ -4158,6 +4158,49 @@ export default function OrdersReport() {
                 <i className="fas fa-times"></i>
               </button>
             </div>
+            {/* 🔥 INFO BOX FOR HEADERS */}
+            <div className="mb-6 bg-indigo-50/50 border border-indigo-100 p-4 rounded-xl">
+              <div className="flex items-center gap-2 mb-2.5">
+                <i className="fas fa-info-circle text-indigo-500"></i>
+                <h4 className="text-[10px] font-black text-indigo-800 uppercase tracking-widest">
+                  Required Excel Headers
+                </h4>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  "S.No",
+                  "Order ID",
+                  "Txn Date",
+                  "Month",
+                  "Day",
+                  "Txn Detail",
+                  "Merchant",
+                  "Merchant ID",
+                  "Firm",
+                  "Location",
+                  "ASIN/FSN",
+                  "Model Name",
+                  "Model",
+                  "Qty",
+                  "Order Amt",
+                  "Unit Price",
+                  "Payment",
+                  "Card Offer",
+                  "Status",
+                ].map((h, i) => (
+                  <span
+                    key={i}
+                    className="px-2 py-1 bg-white border border-indigo-200 text-indigo-700 text-[10px] font-bold rounded shadow-sm"
+                  >
+                    {h}
+                  </span>
+                ))}
+              </div>
+              <p className="text-[10px] text-indigo-600 mt-3 font-medium">
+                * Spelling must match exactly. Case (Capital/Small) does not
+                matter.
+              </p>
+            </div>
             <form onSubmit={handleUploadSubmit}>
               <div className="border-2 border-dashed border-gray-200 p-8 text-center rounded-xl bg-gray-50 mb-6 hover:bg-gray-100 transition-colors">
                 <i className="fas fa-file-excel text-3xl text-emerald-500 mb-3 block"></i>
