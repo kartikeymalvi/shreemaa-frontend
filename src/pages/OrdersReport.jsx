@@ -3871,7 +3871,7 @@ export default function OrdersReport() {
               {/* Premium Thin Headers */}
               <tr className="bg-slate-50/80 border-b border-gray-200 text-slate-500 text-[10px] font-black uppercase tracking-widest sticky top-0 z-10 backdrop-blur-sm">
                 {role === "ADMIN" && (
-                  <th className="p-4 w-10 text-center">
+                  <th className="px-2 py-1 text-[11px] text-slate-800 whitespace-nowrap border-b">
                     <input
                       type="checkbox"
                       onChange={handleSelectAll}
@@ -3948,7 +3948,7 @@ export default function OrdersReport() {
                       className="hover:bg-slate-50/50 transition-colors group"
                     >
                       {role === "ADMIN" && (
-                        <td className="p-4 text-center">
+                        <td className="px-2 py-1 text-[11px] text-slate-800 whitespace-nowrap ">
                           <input
                             type="checkbox"
                             checked={selectedIds.includes(order.id)}

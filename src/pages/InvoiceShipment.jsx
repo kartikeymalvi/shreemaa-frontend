@@ -1843,7 +1843,7 @@ export default function InvoiceShipment() {
       }
     }
   };
-
+  
   const handleFetchOrderData = async () => {
     if (!searchOrderId.trim())
       return Swal.fire({

@@ -218,7 +218,7 @@ export default function Layout() {
   return (
     <div className="flex h-screen bg-gray-50 font-sans">
       {/* --- SHRI MAA GROUP SIDEBAR (Slate Theme) --- */}
-      <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col z-20 border-r border-slate-800">
+      <aside className="w-48 bg-slate-900 text-white min-h-screen flex flex-col transition-all duration-300">
         {/* --- BRANDING / LOGO SECTION (CLEAN TEXT THEME) --- */}
         <div className="h-20 flex items-center px-6 bg-slate-950 border-b border-slate-800/50 shadow-md">
           <Link
@@ -237,9 +237,8 @@ export default function Layout() {
             {/* Clean Name without Image */}
             <div className="flex flex-col">
               <span className="text-[15px] leading-tight font-black tracking-[0.15em] text-white uppercase group-hover:text-amber-500 transition-colors">
-                SAP-GRPO
+                SHRI MAA GROUP
               </span>
-              
             </div>
           </Link>
         </div>
@@ -345,6 +344,16 @@ export default function Layout() {
             >
               Track ID
             </span>
+          </Link>
+          <Link
+            to="/"
+            className={`flex items-center gap-3 px-6 py-3 transition-colors text-sm font-medium ${
+              location.pathname === "/reports"
+                ? "bg-amber-500 text-slate-900 border-r-4 border-amber-600"
+                : "hover:text-white hover:bg-slate-800"
+            }`}
+          >
+            <i className="fas fa-chart-bar w-5 text-center"></i> GRPO
           </Link>
 
           {/* REFUND LINK */}
