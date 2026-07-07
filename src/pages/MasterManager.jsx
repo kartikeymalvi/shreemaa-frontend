@@ -804,6 +804,28 @@ export default function MasterManager() {
     }
   };
 
+  // template download function for model 
+  const handleDownloadTemplate = () => {
+    const headers = [
+      "ASIN/FSN",
+      "Model Name",
+      "Model",
+      "SAP Polyshri",
+      "SAP Rio",
+      "SAP NE",
+      "SAP SMS",
+      "SAP SMMPL",
+    ];
+    const csvContent = "data:text/csv;charset=utf-8," + headers.join(",");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "Model_Master_Template.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const title = currentTab
     ? currentTab.charAt(0).toUpperCase() + currentTab.slice(1, -1)
     : "";
@@ -846,17 +868,29 @@ export default function MasterManager() {
           {role === "ADMIN" && (
             <div className="flex items-center gap-3">
               {currentTab === "models" && (
-                <button
-                  onClick={() => setUploadModalOpen(true)}
-                  className="bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-100 px-4 py-2 rounded-lg font-bold text-xs flex items-center gap-2 transition-colors shadow-sm"
-                >
-                  <i className="fas fa-file-excel"></i> Upload Excel
-                </button>
+                <>
+                  {/* 🔥 NAYA TEMPLATE BUTTON 🔥 */}
+                  <button
+                    onClick={handleDownloadTemplate}
+                    className="bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50 px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider flex items-center gap-2 transition-colors shadow-sm"
+                  >
+                    <i className="fas fa-file-csv"></i> Template
+                  </button>
+
+                  {/* PURANA UPLOAD BUTTON */}
+                  <button
+                    onClick={() => setUploadModalOpen(true)}
+                    className="bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-100 px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider flex items-center gap-2 transition-colors shadow-sm"
+                  >
+                    <i className="fas fa-file-excel"></i> Upload Excel
+                  </button>
+                </>
               )}
 
+              {/* ADD NEW BUTTON */}
               <button
                 onClick={handleAddNew}
-                className="bg-amber-500 hover:bg-amber-600 text-slate-900 px-4 py-2 rounded-lg font-bold text-xs flex items-center gap-2 transition-colors shadow-sm"
+                className="bg-amber-500 hover:bg-amber-600 text-slate-900 px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider flex items-center gap-2 transition-colors shadow-sm"
               >
                 <i className="fas fa-plus"></i> Add {title}
               </button>

@@ -1706,6 +1706,30 @@ export default function InvoiceShipment() {
     fetchMasters();
   }, []);
 
+
+
+  // template download function-
+  const handleDownloadTemplate = () => {
+    const headers = [
+      "Order ID",
+      "Txn Date",
+      "Firm",
+      "Seller Name",
+      "Invoice No",
+      "Delivery Status",
+      "Delivery Date",
+      "Tracking ID",
+    ];
+    const csvContent = "data:text/csv;charset=utf-8," + headers.join(",");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "Invoice_Shipment_Template.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const fetchData = async () => {
     try {
       const queryParams = new URLSearchParams(
@@ -2326,6 +2350,22 @@ export default function InvoiceShipment() {
               <i className="fas fa-trash-alt"></i> Delete ({selectedIds.length})
             </button>
           )}
+
+          {/* 🔥 NAYA TEMPLATE BUTTON TOP HEADER MEIN 🔥 */}
+          <button
+            onClick={handleDownloadTemplate}
+            className="bg-white border border-gray-200 text-slate-700 hover:text-indigo-700 hover:border-indigo-200 hover:bg-indigo-50 px-4 py-2.5 rounded-lg font-bold text-xs uppercase tracking-wider shadow-sm transition flex items-center gap-2"
+          >
+            <i className="fas fa-file-csv"></i> Template
+          </button>
+
+          {/* ... iske aage aapke purane Upload, Export wale button rahenge ... */}
+          <button
+            onClick={() => setUploadModalOpen(true)}
+            className="bg-white border border-gray-200 text-slate-700 hover:text-emerald-700 hover:border-emerald-200 hover:bg-emerald-50 px-4 py-2.5 rounded-lg font-bold text-xs uppercase tracking-wider shadow-sm transition flex items-center gap-2"
+          >
+            <i className="fas fa-file-upload"></i> Upload
+          </button>
 
           <button
             onClick={() => {
@@ -2956,38 +2996,7 @@ export default function InvoiceShipment() {
                 <i className="fas fa-times"></i>
               </button>
             </div>
-            {/* 🔥 INFO BOX FOR HEADERS */}
-            <div className="mb-6 bg-indigo-50/50 border border-indigo-100 p-4 rounded-xl">
-              <div className="flex items-center gap-2 mb-2.5">
-                <i className="fas fa-info-circle text-indigo-500"></i>
-                <h4 className="text-[10px] font-black text-indigo-800 uppercase tracking-widest">
-                  Required Excel Headers
-                </h4>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  "Order ID",
-                  "Txn Date",
-                  "Firm",
-                  "Seller Name",
-                  "Invoice No",
-                  "Delivery Status",
-                  "Delivery Date",
-                  "Tracking ID",
-                ].map((h, i) => (
-                  <span
-                    key={i}
-                    className="px-2 py-1 bg-white border border-indigo-200 text-indigo-700 text-[10px] font-bold rounded shadow-sm"
-                  >
-                    {h}
-                  </span>
-                ))}
-              </div>
-              <p className="text-[10px] text-indigo-600 mt-3 font-medium">
-                * Spelling must match exactly. Case (Capital/Small) does not
-                matter.
-              </p>
-            </div>
+
             <form onSubmit={handleUploadSubmit}>
               <div className="border-2 border-dashed border-gray-200 p-8 text-center rounded-xl bg-gray-50 mb-6 hover:bg-gray-100 transition-colors">
                 <i className="fas fa-file-excel text-3xl text-emerald-500 mb-3 block"></i>
