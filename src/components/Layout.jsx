@@ -346,14 +346,14 @@ export default function Layout() {
             </span>
           </Link>
           <Link
-            to="/"
+            to="/dashboard"
             className={`flex items-center gap-3 px-6 py-3 transition-colors text-sm font-medium ${
               location.pathname === "/reports"
                 ? "bg-amber-500 text-slate-900 border-r-4 border-amber-600"
                 : "hover:text-white hover:bg-slate-800"
             }`}
           >
-            <i className="fas fa-chart-bar w-5 text-center"></i> GRPO
+            <i className="fas fa-chart-bar w-5 text-center"></i>SAP-GRPO
           </Link>
 
           {/* REFUND LINK */}
