@@ -114,12 +114,17 @@ export default function InvoiceShipment() {
       "Order ID",
       "Txn Date",
       "Firm",
+      "Location",
+      "ASIN/FSN",
       "Seller Name",
+      "Seller GSTN",
       "Invoice No",
+      "Invoice Date",
+      "Inv Qty",
+      "Inv Amount",
+      "Tracking ID",
       "Delivery Status",
       "Delivery Date",
-      "Tracking ID",
-      "invoice_date'",
     ];
     const csvContent = "data:text/csv;charset=utf-8," + headers.join(",");
     const encodedUri = encodeURI(csvContent);

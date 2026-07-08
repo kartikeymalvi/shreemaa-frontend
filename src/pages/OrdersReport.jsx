@@ -3337,7 +3337,7 @@ export default function OrdersReport() {
       "Unit Price",
       "Payment",
       "Card Offer",
-      "Status",
+      
     ];
     const csvContent = "data:text/csv;charset=utf-8," + headers.join(",");
     const encodedUri = encodeURI(csvContent);
