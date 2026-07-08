@@ -807,14 +807,14 @@ export default function MasterManager() {
   // template download function for model 
   const handleDownloadTemplate = () => {
     const headers = [
-      "ASIN/FSN",
-      "Model Name",
-      "Model",
-      "SAP Polyshri",
-      "SAP Rio",
-      "SAP NE",
-      "SAP SMS",
-      "SAP SMMPL",
+      "asin_fsn",
+      "model_name",
+      "model",
+      "sap_polyshri",
+      "sap_rio",
+      "sap_ne",
+      "sap_sms",
+      "sap_smmpl",
     ];
     const csvContent = "data:text/csv;charset=utf-8," + headers.join(",");
     const encodedUri = encodeURI(csvContent);
