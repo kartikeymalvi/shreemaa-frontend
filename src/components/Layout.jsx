@@ -281,11 +281,8 @@ export default function Layout() {
             </div>
 
             <div className="flex flex-col leading-tight">
-              <span className="text-[13px] font-black tracking-widest text-white uppercase group-hover:text-amber-500 transition-colors">
-                SHRI MAA
-              </span>
-              <span className="text-[13px] font-black tracking-widest text-white uppercase group-hover:text-amber-500 transition-colors">
-                GROUP
+              <span className="text-[14px] font-bold text-white uppercase group-hover:text-amber-500 transition-colors">
+                SHRI MAA GROUP
               </span>
             </div>
           </Link>

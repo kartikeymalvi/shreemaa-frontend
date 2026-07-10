@@ -22,7 +22,7 @@
 //       </h3>
 //       <i className={`fas ${icon} text-slate-200 text-xl`}></i>
 //     </div>
-//     <div className="text-3xl font-black text-slate-900 tracking-tight mb-2">
+//     <div className="text-3xl font-bold text-slate-900 tracking-tight mb-2">
 //       {value}
 //     </div>
 //     <p className={`text-xs font-semibold ${subtextColor}`}>{subtext}</p>
@@ -187,7 +187,7 @@
 //                 <i className="fas fa-users-cog text-slate-200 text-xl group-hover:text-amber-400 transition-colors"></i>
 //               </div>
 //               <div className="flex items-baseline gap-2 mb-3">
-//                 <span className="text-3xl font-black text-slate-900 tracking-tight">
+//                 <span className="text-3xl font-bold text-slate-900 tracking-tight">
 //                   {usersList.length}
 //                 </span>
 //                 <span className="text-xs font-semibold text-slate-500">
@@ -307,7 +307,7 @@
 //           <div className="bg-white rounded-2xl w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] animate-in slide-in-from-bottom-4">
 //             <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-white">
 //               <div>
-//                 <h2 className="text-xl font-black text-slate-900 tracking-tight">
+//                 <h2 className="text-xl font-bold text-slate-900 tracking-tight">
 //                   Active Users List
 //                 </h2>
 //                 <p className="text-xs text-slate-500 font-medium mt-1">
@@ -332,7 +332,7 @@
 
 //             <div className="overflow-y-auto p-0 flex-1 bg-gray-50/50">
 //               <table className="w-full text-left border-collapse">
-//                 <thead className="bg-white sticky top-0 shadow-sm text-slate-400 text-[10px] tracking-widest uppercase font-black z-10">
+//                 <thead className="bg-white sticky top-0 shadow-sm text-slate-400 text-[10px] tracking-widest uppercase font-bold z-10">
 //                   <tr>
 //                     <th className="px-6 py-4">User ID</th>
 //                     <th className="px-6 py-4">Username</th>
@@ -347,7 +347,7 @@
 //                       <td className="px-6 py-4 font-mono text-xs font-bold text-slate-400">
 //                         #{u.id}
 //                       </td>
-//                       <td className="px-6 py-4 font-bold text-slate-800 flex items-center gap-3">
+//                       <td className="px-6 py-4 font-medium text-slate-700 flex items-center gap-3">
 //                         <div
 //                           className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold ${
 //                             u.role === "ADMIN"
@@ -401,7 +401,7 @@
 //           <div className="bg-white p-8 rounded-2xl w-full max-w-md shadow-2xl border border-gray-100 animate-in zoom-in-95">
 //             <div className="flex justify-between items-center mb-6">
 //               <div>
-//                 <h2 className="text-xl font-black text-slate-900 tracking-tight">
+//                 <h2 className="text-xl font-bold text-slate-900 tracking-tight">
 //                   Create Account
 //                 </h2>
 //                 <p className="text-xs text-slate-500 font-medium mt-1">
@@ -443,7 +443,7 @@
 //                   onChange={(e) =>
 //                     setNewUser({ ...newUser, password: e.target.value })
 //                   }
-//                   className="w-full border border-gray-200 bg-gray-50 p-3 rounded-lg focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none text-sm font-black tracking-widest transition-all"
+//                   className="w-full border border-gray-200 bg-gray-50 p-3 rounded-lg focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none text-sm font-bold tracking-widest transition-all"
 //                   placeholder="••••••••"
 //                 />
 //               </div>
@@ -508,7 +508,7 @@ const KpiCard = ({ title, value, subtext, subtextColor, borderLeftColor }) => (
     <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">
       {title}
     </h3>
-    <div className="text-3xl font-black text-slate-800 tracking-tight mb-2">
+    <div className="text-3xl font-medium text-slate-700 tracking-tight mb-2">
       {value}
     </div>
     <p className={`text-[11px] font-bold ${subtextColor}`}>{subtext}</p>
@@ -611,7 +611,7 @@ export default function Dashboard() {
       {/* --- HEADER --- */}
       <div className="mb-6 flex justify-between items-center">
         <div>
-          <h1 className="text-[22px] font-black text-slate-900 tracking-tight">
+          <h1 className="text-[22px] font-bold text-slate-900 tracking-tight">
             Dashboard
           </h1>
           <p className="text-xs text-slate-400 font-medium mt-0.5">
@@ -680,7 +680,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
         {/* PIE CHART */}
         <div className="bg-white p-5 rounded-lg border border-gray-100 shadow-sm flex flex-col">
-          <h3 className="text-[13px] font-bold text-slate-800">
+          <h3 className="text-[13px] font-medium text-slate-700">
             Order status breakdown
           </h3>
           <p className="text-[11px] text-slate-400 font-medium mb-4 mt-0.5">
@@ -726,7 +726,7 @@ export default function Dashboard() {
 
         {/* AREA CHART */}
         <div className="bg-white p-5 rounded-lg border border-gray-100 shadow-sm lg:col-span-2 flex flex-col">
-          <h3 className="text-[13px] font-bold text-slate-800">
+          <h3 className="text-[13px] font-medium text-slate-700">
             Revenue trend
           </h3>
           <p className="text-[11px] text-slate-400 font-medium mb-4 mt-0.5">
@@ -787,7 +787,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* RECENT ORDERS LIST */}
         <div className="bg-white p-5 rounded-lg border border-gray-100 shadow-sm lg:col-span-2">
-          <h3 className="text-[13px] font-bold text-slate-800">
+          <h3 className="text-[13px] font-medium text-slate-700">
             Recent orders
           </h3>
           <p className="text-[11px] text-slate-400 font-medium mb-5 mt-0.5">
@@ -853,7 +853,7 @@ export default function Dashboard() {
 
         {/* QUICK ACTIONS CARD */}
         <div className="bg-white p-5 rounded-lg border border-gray-100 shadow-sm flex flex-col">
-          <h3 className="text-[13px] font-bold text-slate-800">
+          <h3 className="text-[13px] font-medium text-slate-700">
             Quick actions
           </h3>
           <p className="text-[11px] text-slate-400 font-medium mb-4 mt-0.5">
@@ -884,7 +884,7 @@ export default function Dashboard() {
           <div className="bg-white rounded-2xl w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] animate-in slide-in-from-bottom-4">
             <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-white">
               <div>
-                <h2 className="text-xl font-black text-slate-900 tracking-tight">
+                <h2 className="text-xl font-bold text-slate-900 tracking-tight">
                   Active Users List
                 </h2>
                 <p className="text-xs text-slate-500 font-medium mt-1">
@@ -908,7 +908,7 @@ export default function Dashboard() {
             </div>
             <div className="overflow-y-auto p-0 flex-1 bg-gray-50/50">
               <table className="w-full text-left border-collapse">
-                <thead className="bg-white sticky top-0 shadow-sm text-slate-400 text-[10px] tracking-widest uppercase font-black z-10">
+                <thead className="bg-white sticky top-0 shadow-sm text-slate-400 text-[10px] tracking-widest uppercase font-bold z-10">
                   <tr>
                     <th className="px-6 py-4">User ID</th>
                     <th className="px-6 py-4">Username</th>
@@ -923,7 +923,7 @@ export default function Dashboard() {
                       <td className="px-6 py-4 font-mono text-xs font-bold text-slate-400">
                         #{u.id}
                       </td>
-                      <td className="px-6 py-4 font-bold text-slate-800 flex items-center gap-3">
+                      <td className="px-6 py-4 font-medium text-slate-700 flex items-center gap-3">
                         <div
                           className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold ${u.role === "ADMIN" ? "bg-amber-500 shadow-md shadow-amber-500/20" : "bg-slate-800"}`}
                         >
@@ -969,7 +969,7 @@ export default function Dashboard() {
           <div className="bg-white p-8 rounded-2xl w-full max-w-md shadow-2xl border border-gray-100 animate-in zoom-in-95">
             <div className="flex justify-between items-center mb-6">
               <div>
-                <h2 className="text-xl font-black text-slate-900 tracking-tight">
+                <h2 className="text-xl font-bold text-slate-900 tracking-tight">
                   Create Account
                 </h2>
                 <p className="text-xs text-slate-500 font-medium mt-1">
@@ -1010,7 +1010,7 @@ export default function Dashboard() {
                   onChange={(e) =>
                     setNewUser({ ...newUser, password: e.target.value })
                   }
-                  className="w-full border border-gray-200 bg-gray-50 p-3 rounded-lg focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none text-sm font-black tracking-widest transition-all"
+                  className="w-full border border-gray-200 bg-gray-50 p-3 rounded-lg focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none text-sm font-bold tracking-widest transition-all"
                   placeholder="••••••••"
                 />
               </div>

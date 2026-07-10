@@ -503,7 +503,7 @@
 //         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in">
 //           <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl animate-in zoom-in-95 overflow-hidden flex flex-col max-h-[90vh]">
 //             <div className="flex justify-between items-center px-8 py-5 border-b border-gray-100 bg-white">
-//               <h3 className="text-lg font-black text-slate-900 tracking-tight">
+//               <h3 className="text-lg font-medium text-slate-700 text-slate-900 tracking-tight">
 //                 {editId ? `Edit Record` : addButtonText}
 //               </h3>
 //               <button
@@ -556,7 +556,7 @@
 //                     </div>
 
 //                     <div className="bg-slate-50 p-5 rounded-xl border border-gray-100 mt-4">
-//                       <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+//                       <p className="text-[10px] font-medium text-slate-700 text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
 //                         <i className="fas fa-server"></i> SAP Configurations
 //                         (Seller)
 //                       </p>
@@ -655,7 +655,7 @@
 //                     </div>
 
 //                     <div className="bg-slate-50 p-5 rounded-xl border border-gray-100 mt-4">
-//                       <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+//                       <p className="text-[10px] font-medium text-slate-700 text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
 //                         <i className="fas fa-server"></i> SAP Configurations
 //                         (Model)
 //                       </p>
@@ -718,7 +718,7 @@
 //         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in">
 //           <div className="bg-white p-8 rounded-2xl w-full max-w-md shadow-2xl animate-in zoom-in-95">
 //             <div className="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
-//               <h2 className="text-xl font-black text-slate-900 tracking-tight">
+//               <h2 className="text-xl font-medium text-slate-700 text-slate-900 tracking-tight">
 //                 Bulk Upload {currentTab === "sellers" ? "Sellers" : "Models"}
 //               </h2>
 //               <button
@@ -732,7 +732,7 @@
 //             <div className="mb-6 bg-indigo-50/50 border border-indigo-100 p-4 rounded-xl">
 //               <div className="flex items-center gap-2 mb-2.5">
 //                 <i className="fas fa-info-circle text-indigo-500"></i>
-//                 <h4 className="text-[10px] font-black text-indigo-800 uppercase tracking-widest">
+//                 <h4 className="text-[10px] font-medium text-slate-700 text-indigo-800 uppercase tracking-widest">
 //                   Required Excel Headers
 //                 </h4>
 //               </div>
@@ -1074,7 +1074,7 @@ export default function MasterManager() {
     <div className="bg-[#f8fafc] min-h-screen font-sans pb-10">
       {/* PAGE HEADER */}
       <div className="mb-2">
-        <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
           Masters
         </h1>
         <p className="text-xs text-slate-500 font-medium mt-1">
@@ -1104,7 +1104,7 @@ export default function MasterManager() {
         {/* CARD HEADER WITH SEARCH & ICONS (Exact Match to Screenshot) */}
         <div className="flex flex-col md:flex-row justify-between items-center px-6 py-4 border-b border-gray-100 bg-white gap-4">
           <div className="flex items-center gap-6 w-full md:w-auto">
-            <h2 className="text-lg font-black text-slate-900 whitespace-nowrap min-w-[60px]">
+            <h2 className="text-lg font-medium text-slate-700 text-slate-900 whitespace-nowrap min-w-[60px]">
               {currentTab === "sellers" ? "Seller" : title}
             </h2>
             <div className="flex items-center bg-white px-3 py-2 rounded-md border border-gray-200 focus-within:border-amber-400 transition-all min-w-[280px]">
@@ -1310,7 +1310,7 @@ export default function MasterManager() {
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in">
           <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl animate-in zoom-in-95 overflow-hidden flex flex-col max-h-[90vh]">
             <div className="flex justify-between items-center px-8 py-5 border-b border-gray-100 bg-white">
-              <h3 className="text-lg font-black text-slate-900 tracking-tight">
+              <h3 className="text-lg font-medium text-slate-700 text-slate-900 tracking-tight">
                 {editId ? `Edit Record` : addButtonText}
               </h3>
               <button
@@ -1360,7 +1360,7 @@ export default function MasterManager() {
                       </div>
                     </div>
                     <div className="bg-slate-50 p-5 rounded-xl border border-gray-100 mt-4">
-                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                      <p className="text-[10px] font-medium text-slate-700 text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
                         <i className="fas fa-server"></i> SAP Configurations
                         (Seller)
                       </p>
@@ -1456,7 +1456,7 @@ export default function MasterManager() {
                       </div>
                     </div>
                     <div className="bg-slate-50 p-5 rounded-xl border border-gray-100 mt-4">
-                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                      <p className="text-[10px] font-medium text-slate-700 text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
                         <i className="fas fa-server"></i> SAP Configurations
                         (Model)
                       </p>
@@ -1518,7 +1518,7 @@ export default function MasterManager() {
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in">
           <div className="bg-white p-8 rounded-2xl w-full max-w-md shadow-2xl animate-in zoom-in-95">
             <div className="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
-              <h2 className="text-xl font-black text-slate-900 tracking-tight">
+              <h2 className="text-xl font-medium text-slate-700 text-slate-900 tracking-tight">
                 Bulk Upload {currentTab === "sellers" ? "Sellers" : "Models"}
               </h2>
               <button
@@ -1531,7 +1531,7 @@ export default function MasterManager() {
             <div className="mb-6 bg-indigo-50/50 border border-indigo-100 p-4 rounded-xl">
               <div className="flex items-center gap-2 mb-2.5">
                 <i className="fas fa-info-circle text-indigo-500"></i>
-                <h4 className="text-[10px] font-black text-indigo-800 uppercase tracking-widest">
+                <h4 className="text-[10px] font-medium text-slate-700 text-indigo-800 uppercase tracking-widest">
                   Required Excel Headers
                 </h4>
               </div>

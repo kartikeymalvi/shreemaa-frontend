@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import api from "../api/axios";
 import Swal from "sweetalert2";
+// Dusre page me sabse upar ye line add karein
+import { IconDownload, IconColumns, IconPlus, IconSearch, IconFilter } from "./ApprovalManager";
 
 // --- DATE FORMATTER ---
 const formatDate = (dateStr) => {
@@ -649,7 +651,7 @@ export default function InvoiceShipment() {
       {/* HEADER & TOP BUTTONS */}
       <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end mb-8 gap-4 border-b border-gray-200 pb-5">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
             Invoice & Shipment
           </h1>
           <p className="text-sm text-slate-500 font-medium mt-1">
@@ -743,9 +745,9 @@ export default function InvoiceShipment() {
             {loading ? (
               <i className="fas fa-spinner fa-spin"></i>
             ) : (
-              <i className="fas fa-download"></i>
+              <IconDownload/>
             )}{" "}
-            Export
+            
           </button>
 
           {role === "ADMIN" && selectedIds.length > 0 && (
@@ -793,7 +795,7 @@ export default function InvoiceShipment() {
         <div className="overflow-x-auto max-h-[65vh] min-h-[50vh] custom-scrollbar">
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead>
-              <tr className="bg-slate-50/80 border-b border-gray-200 text-slate-500 text-[10px] font-black uppercase tracking-widest sticky top-0 z-10 backdrop-blur-sm">
+              <tr className="bg-slate-50/80 border-b border-gray-200 text-slate-500 text-[10px] font-bold uppercase tracking-widest sticky top-0 z-10 backdrop-blur-sm">
                 {role === "ADMIN" && (
                   <th className="p-4 w-10 text-center">
                     <input
@@ -922,7 +924,7 @@ export default function InvoiceShipment() {
                         </td>
                       )}
                       {showCol("show_firm") && (
-                        <td className="p-4 font-bold text-slate-800 text-[13px]">
+                        <td className="p-4 font-medium text-slate-700 text-[13px]">
                           {ship?.firm || "-"}
                         </td>
                       )}
@@ -959,7 +961,7 @@ export default function InvoiceShipment() {
                       )}
 
                       {showCol("show_seller_name") && (
-                        <td className="p-4 font-bold text-slate-800 text-[13px] border-l border-gray-100">
+                        <td className="p-4 font-medium text-slate-700 text-[13px] border-l border-gray-100">
                           {ship?.seller_name || "-"}
                         </td>
                       )}
@@ -979,12 +981,12 @@ export default function InvoiceShipment() {
                         </td>
                       )}
                       {showCol("show_invoice_qty") && (
-                        <td className="p-4 text-center font-bold text-slate-800">
+                        <td className="p-4 text-center font-medium text-slate-700">
                           {ship?.invoice_qty || "-"}
                         </td>
                       )}
                       {showCol("show_invoice_amount") && (
-                        <td className="p-4 text-right font-bold text-slate-800 text-[13px]">
+                        <td className="p-4 text-right font-medium text-slate-700 text-[13px]">
                           ₹
                           {parseFloat(ship?.invoice_amount || 0).toLocaleString(
                             "en-IN",
@@ -994,7 +996,7 @@ export default function InvoiceShipment() {
 
                       {/* 🔥 NAYA TABLE DATA: Tracking ID */}
                       {showCol("show_tracking_id") && (
-                        <td className="p-4 text-center font-black text-indigo-600 bg-indigo-50/20 text-[12px] uppercase tracking-wider">
+                        <td className="p-4 text-center font-bold text-indigo-600 bg-indigo-50/20 text-[12px] uppercase tracking-wider">
                           {ship?.tracking_id || "-"}
                         </td>
                       )}
@@ -1118,7 +1120,7 @@ export default function InvoiceShipment() {
 
       {/* PAGINATION */}
       <div className="mt-4 flex flex-col md:flex-row justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-200 gap-4">
-        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">
+        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2">
           Total Records:{" "}
           <span className="text-slate-800 text-sm">{totalRecords}</span>
         </div>
@@ -1183,7 +1185,7 @@ export default function InvoiceShipment() {
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in">
           <div className="bg-white p-8 rounded-2xl w-full max-w-3xl shadow-2xl animate-in zoom-in-95">
             <div className="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
-              <h2 className="text-xl font-black text-slate-900 tracking-tight">
+              <h2 className="text-xl font-bold text-slate-900 tracking-tight">
                 Advanced Filters
               </h2>
               <button
@@ -1334,7 +1336,7 @@ export default function InvoiceShipment() {
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in">
           <div className="bg-white p-8 rounded-2xl w-full max-w-3xl shadow-2xl animate-in zoom-in-95">
             <div className="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
-              <h2 className="text-xl font-black text-slate-900 tracking-tight">
+              <h2 className="text-xl font-bold text-slate-900 tracking-tight">
                 Configure User View
               </h2>
               <button
@@ -1392,7 +1394,7 @@ export default function InvoiceShipment() {
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in">
           <div className="bg-white p-8 rounded-2xl w-full max-w-md shadow-2xl animate-in zoom-in-95">
             <div className="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
-              <h2 className="text-xl font-black text-slate-900 tracking-tight">
+              <h2 className="text-xl font-bold text-slate-900 tracking-tight">
                 Bulk Upload Shipments
               </h2>
               <button
@@ -1430,7 +1432,7 @@ export default function InvoiceShipment() {
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in">
           <div className="bg-white rounded-2xl w-full max-w-5xl shadow-2xl flex flex-col max-h-[95vh] animate-in zoom-in-95">
             <div className="flex justify-between items-center px-8 py-5 border-b border-gray-100 bg-white rounded-t-2xl">
-              <h2 className="text-xl font-black text-slate-900 tracking-tight">
+              <h2 className="text-xl font-bold text-slate-900 tracking-tight">
                 {editMode ? "Edit Shipment Record" : "Process New Shipment"}
               </h2>
               <button
@@ -1453,7 +1455,7 @@ export default function InvoiceShipment() {
                       value={searchOrderId}
                       onChange={(e) => setSearchOrderId(e.target.value)}
                       placeholder="e.g. OD43785..."
-                      className="w-full bg-gray-50 border border-gray-200 p-3 rounded-lg outline-none focus:border-slate-500 focus:ring-1 focus:ring-slate-200 font-bold text-slate-800 text-sm"
+                      className="w-full bg-gray-50 border border-gray-200 p-3 rounded-lg outline-none focus:border-slate-500 focus:ring-1 focus:ring-slate-200 font-medium text-slate-700 text-sm"
                     />
                   </div>
                   <button
@@ -1478,7 +1480,7 @@ export default function InvoiceShipment() {
               >
                 {itemsData.length > 0 && (
                   <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-5 border-b border-gray-100 pb-3">
+                    <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-5 border-b border-gray-100 pb-3">
                       Common Order Details (Read-Only)
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
@@ -1509,7 +1511,7 @@ export default function InvoiceShipment() {
                     key={index}
                     className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm"
                   >
-                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-5 border-b border-gray-100 pb-3">
+                    <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-5 border-b border-gray-100 pb-3">
                       Step 2: Product & Invoice Details
                     </h3>
 

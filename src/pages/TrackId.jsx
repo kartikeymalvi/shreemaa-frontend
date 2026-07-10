@@ -72,7 +72,7 @@ export default function TrackId() {
       {/* PAGE HEADER */}
       <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end mb-8 gap-4 border-b border-gray-200 pb-5">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
             Track Shipment
           </h1>
           <p className="text-sm text-slate-500 font-medium mt-1">
