@@ -339,8 +339,8 @@ export default function Layout() {
             </button>
           )}
 
-          <Link to="/approval" className={getNavClass("/approval")}>
-            <i className="fas fa-check-square w-5 text-center"></i> Approval
+          <Link to="/approvals" className={getNavClass("/approval")}>
+            <i className="fas fa-check-square w-5 text-center"></i> Approvals
           </Link>
 
           <Link to="/orders-report" className={getNavClass("/orders-report")}>

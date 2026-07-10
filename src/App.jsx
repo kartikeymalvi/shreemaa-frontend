@@ -14,6 +14,7 @@ import MasterManager from "./pages/MasterManager";
 import InvoiceShipment from "./pages/InvoiceShipment";
 import { Toaster } from "react-hot-toast";
 import TrackId from "./pages/TrackId";
+import ApprovalManager from "./pages/ApprovalManager";
 
 function App() {
   return (
@@ -47,6 +48,8 @@ function App() {
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
             <Route path="/invoice-shipment" element={<InvoiceShipment />} />
             <Route path="track-id" element={<TrackId />} />
+            {/* approoval path */}
+            <Route path="/approvals" element={<ApprovalManager />} />
           </Route>
         </Routes>
       </Router>
