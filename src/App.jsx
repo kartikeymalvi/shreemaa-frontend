@@ -15,6 +15,7 @@ import InvoiceShipment from "./pages/InvoiceShipment";
 import { Toaster } from "react-hot-toast";
 import TrackId from "./pages/TrackId";
 import ApprovalManager from "./pages/ApprovalManager";
+import GRPOManager from "./pages/GRPOManager";
 
 function App() {
   return (
@@ -50,6 +51,8 @@ function App() {
             <Route path="track-id" element={<TrackId />} />
             {/* approoval path */}
             <Route path="/approvals" element={<ApprovalManager />} />
+            {/* GRPO path */}
+            <Route path="/grpo" element={<GRPOManager />} />
           </Route>
         </Routes>
       </Router>

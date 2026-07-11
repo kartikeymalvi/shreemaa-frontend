@@ -783,7 +783,7 @@ export default function InvoiceShipment() {
               setEditMode(false);
               setFormModalOpen(true);
             }}
-            className="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-lg font-bold text-xs uppercase tracking-wider shadow-md transition flex items-center gap-2"
+            className="bg-slate-900 hover:bg-slate-50 text-slate-500 text-xs uppercase tracking-widest px-5 py-2.5 rounded-lg font-bold text-xs uppercase tracking-wider shadow-md transition flex items-center gap-2"
           >
             <i className="fas fa-plus"></i> New Entry
           </button>
@@ -1083,7 +1083,7 @@ export default function InvoiceShipment() {
                             {currentEdit.isDirty && (
                               <button
                                 onClick={() => handleInlineSave(ship)}
-                                className="bg-slate-900 hover:bg-slate-800 text-white px-2.5 py-1 rounded text-[10px] font-bold transition flex items-center shadow-sm"
+                                className="bg-slate-900 hover:bg-slate-50 text-slate-500 text-xs uppercase tracking-widest px-2.5 py-1 rounded text-[10px] font-bold transition flex items-center shadow-sm"
                               >
                                 <i className="fas fa-check mr-1"></i> Save
                               </button>
@@ -1322,7 +1322,7 @@ export default function InvoiceShipment() {
                   setCurrentPage(1);
                   setFilterModalOpen(false);
                 }}
-                className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs tracking-wider uppercase rounded-lg font-bold transition shadow-md"
+                className="px-6 py-2.5 bg-slate-900 hover:bg-slate-50 text-slate-500 text-xs uppercase tracking-widest text-xs tracking-wider uppercase rounded-lg font-bold transition shadow-md"
               >
                 Apply Filters
               </button>
@@ -1380,7 +1380,7 @@ export default function InvoiceShipment() {
               </button>
               <button
                 onClick={handleSaveViewSettings}
-                className="px-8 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs tracking-wider uppercase rounded-lg font-bold transition shadow-md"
+                className="px-8 py-2.5 bg-slate-900 hover:bg-slate-50 text-slate-500 text-xs uppercase tracking-widest text-xs tracking-wider uppercase rounded-lg font-bold transition shadow-md"
               >
                 Save View
               </button>
@@ -1418,7 +1418,7 @@ export default function InvoiceShipment() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-slate-900 hover:bg-slate-800 text-white py-3 rounded-lg font-bold text-sm tracking-wider uppercase transition shadow-md"
+                className="w-full bg-slate-900 hover:bg-slate-50 text-slate-500 text-xs uppercase tracking-widest py-3 rounded-lg font-bold text-sm tracking-wider uppercase transition shadow-md"
               >
                 {loading ? "Uploading..." : "Sync Database"}
               </button>
@@ -1461,7 +1461,7 @@ export default function InvoiceShipment() {
                   <button
                     onClick={handleFetchOrderData}
                     disabled={loading}
-                    className="bg-slate-900 hover:bg-slate-800 text-white px-8 py-3 rounded-lg font-bold text-sm tracking-wider uppercase transition shadow-md w-full md:w-auto flex items-center justify-center gap-2"
+                    className="bg-slate-900 hover:bg-slate-50 text-slate-500 text-xs uppercase tracking-widest px-8 py-3 rounded-lg font-bold text-sm tracking-wider uppercase transition shadow-md w-full md:w-auto flex items-center justify-center gap-2"
                   >
                     {loading ? (
                       <i className="fas fa-spinner fa-spin"></i>
@@ -1672,7 +1672,7 @@ export default function InvoiceShipment() {
                 type="submit"
                 form="shipmentForm"
                 disabled={loading || itemsData.length === 0}
-                className="px-8 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold uppercase tracking-wider rounded-lg shadow-md transition disabled:opacity-50"
+                className="px-8 py-2.5 bg-slate-900 hover:bg-slate-50 text-slate-500 text-xs uppercase tracking-widest text-xs font-bold uppercase tracking-wider rounded-lg shadow-md transition disabled:opacity-50"
               >
                 {loading
                   ? "Processing..."
