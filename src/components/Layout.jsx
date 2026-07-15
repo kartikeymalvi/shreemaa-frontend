@@ -534,7 +534,7 @@ export default function Layout() {
       group: "Account Pages",
       items: [
         { name: "Refund", path: "/refund", icon: "fa-undo-alt" },
-        { name: "Issue & Ticket", path: "/tickets", icon: "fa-ticket-alt" },
+        { name: "Issue & Ticket", path: "/issue-ticket", icon: "fa-ticket-alt" },
         { name: "Reports", path: "/reports", icon: "fa-chart-bar" },
         { name: "Setting", path: "/settings", icon: "fa-cog" },
       ],

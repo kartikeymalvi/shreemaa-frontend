@@ -3776,7 +3776,7 @@ export default function ApprovalManager() {
 
             <button
               onClick={handleAddNew}
-              className="flex items-center gap-2 px-5 py-2.5 bg-[#1677ff] hover:bg-blue-600 text-white rounded-[10px] transition font-bold text-[13px] shadow-md shadow-blue-500/20 whitespace-nowrap"
+              className="flex items-center gap-2 px-5 py-2.5 bg-[#e67e22] hover:bg-blue-600 text-white rounded-[10px] transition font-bold text-[13px] shadow-md shadow-blue-500/20 whitespace-nowrap"
             >
               <IconPlus /> New Approval
             </button>
@@ -4046,8 +4046,9 @@ export default function ApprovalManager() {
                       key={`${app.id}-${item.id}`}
                       className="border-b border-gray-50 last:border-0 hover:bg-blue-50/30 transition-colors group"
                     >
-                      {cols.appNo && (
-                        <td className="p-4 pl-6 font-mono font-bold text-[#1677ff] whitespace-nowrap">
+                      {/* 🔥 Yahan galti thi - ise cols.approvalNo kar diya gaya hai 🔥 */}
+                      {cols.approvalNo && (
+                        <td className="p-4 pl-6 font-mono font-bold text-[#e67e22] whitespace-nowrap">
                           {app.approval_no}
                         </td>
                       )}

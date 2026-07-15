@@ -16,7 +16,7 @@ import { Toaster } from "react-hot-toast";
 import TrackId from "./pages/TrackId";
 import ApprovalManager from "./pages/ApprovalManager";
 import GRPOManager from "./pages/GRPOManager";
-
+import RefundTicketManager from "./pages/RefundTicketManager";
 function App() {
   return (
     <>
@@ -53,6 +53,7 @@ function App() {
             <Route path="/approvals" element={<ApprovalManager />} />
             {/* GRPO path */}
             <Route path="/grpo" element={<GRPOManager />} />
+            <Route path="/issue-ticket" element={<RefundTicketManager />} />
           </Route>
         </Routes>
       </Router>
