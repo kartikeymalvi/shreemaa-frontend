@@ -17,6 +17,7 @@ import TrackId from "./pages/TrackId";
 import ApprovalManager from "./pages/ApprovalManager";
 import GRPOManager from "./pages/GRPOManager";
 import RefundTicketManager from "./pages/RefundTicketManager";
+import RefundManager from "./pages/RefundManager";
 function App() {
   return (
     <>
@@ -54,6 +55,7 @@ function App() {
             {/* GRPO path */}
             <Route path="/grpo" element={<GRPOManager />} />
             <Route path="/issue-ticket" element={<RefundTicketManager />} />
+            <Route path="/refund" element={<RefundManager />} />
           </Route>
         </Routes>
       </Router>

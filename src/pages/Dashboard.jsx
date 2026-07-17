@@ -1671,7 +1671,7 @@ export default function Dashboard() {
                 required
               />
               <input
-                type="text"
+                type="Password"
                 placeholder="Password"
                 value={newUser.password}
                 onChange={(e) =>

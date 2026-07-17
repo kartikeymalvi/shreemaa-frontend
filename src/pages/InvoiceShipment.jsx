@@ -1841,6 +1841,15 @@ export default function InvoiceShipment() {
   const [unlockedRows, setUnlockedRows] = useState({});
   const [manuallyLockedRows, setManuallyLockedRows] = useState({}); // 🔥 Naya state lock enforce karne ke liye
 
+
+  const [isBulkUpdateModalOpen, setBulkUpdateModalOpen] = useState(false);
+  const [bulkUpdateData, setBulkUpdateData] = useState({
+    delivery_status: "Pending",
+    delivery_date: "",
+  });
+
+  
+
   // Modals States
   const [isUploadModalOpen, setUploadModalOpen] = useState(false);
   const [isFormModalOpen, setFormModalOpen] = useState(false);
@@ -2105,6 +2114,31 @@ export default function InvoiceShipment() {
       setItemsData([]);
       setHeaderData({ order_id: "", txn_date: "", firm: "", location: "" });
       setFetchedOrderDetails([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBulkUpdateSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await api.post("reports/shipments/bulk_update_status/", {
+        ids: selectedIds,
+        delivery_status: bulkUpdateData.delivery_status,
+        delivery_date: bulkUpdateData.delivery_date,
+      });
+      Swal.fire({
+        title: "Bulk Updated!",
+        text: `Successfully updated ${selectedIds.length} records.`,
+        icon: "success",
+        confirmButtonColor: "#0f172a",
+      });
+      setBulkUpdateModalOpen(false);
+      setSelectedIds([]);
+      fetchData();
+    } catch (e) {
+      Swal.fire("Error", "Bulk update failed", "error");
     } finally {
       setLoading(false);
     }
@@ -2548,6 +2582,16 @@ export default function InvoiceShipment() {
               <i className="fas fa-trash-alt"></i> Delete ({selectedIds.length})
             </button>
           )}
+          {/* NAYA BULK UPDATE BUTTON */}
+          {selectedIds.length > 0 && (
+            <button
+              onClick={() => setBulkUpdateModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2.5 bg-blue-50 text-blue-600 border border-blue-100 rounded-[10px] text-[12px] font-bold shadow-sm transition animate-in zoom-in whitespace-nowrap hover:bg-blue-100"
+            >
+              <i className="fas fa-sync-alt"></i> Bulk Update (
+              {selectedIds.length})
+            </button>
+          )}
 
           <button
             onClick={() => {
@@ -2924,8 +2968,6 @@ export default function InvoiceShipment() {
                       {/* 🔥 FIXED ACTION BUTTONS (ALWAYS VISIBLE) 🔥 */}
                       <td className="px-4 py-3 border border-gray-200 text-center">
                         <div className="flex items-center justify-center gap-2 transition-opacity">
-                          
-
                           {isLocked ? (
                             // 🔒 LOCKED STATE
                             <div className="flex items-center gap-2">
@@ -3318,7 +3360,6 @@ export default function InvoiceShipment() {
               onSubmit={handleUpdateSubmit}
               className="p-6 space-y-5 bg-[#f0f2f5]/40"
             >
-              
               <div>
                 <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">
                   Delivery Status
@@ -3380,6 +3421,89 @@ export default function InvoiceShipment() {
                 <button
                   type="button"
                   onClick={() => setUpdateModalOpen(false)}
+                  className="px-6 py-2.5 bg-white border border-gray-200 text-gray-600 font-bold text-[11px] uppercase tracking-widest rounded-xl hover:bg-gray-50 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-8 py-2.5 bg-[#e67e22] hover:bg-blue-600 text-white font-bold text-[11px] uppercase tracking-widest rounded-xl shadow-md shadow-blue-500/20 transition"
+                >
+                  Save Updates
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 🔥 PREMIUM BULK UPDATE MODAL 🔥 */}
+      {isBulkUpdateModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95">
+            <div className="px-6 py-5 border-b border-gray-100 bg-white flex justify-between items-center">
+              <div>
+                <h3 className="text-[18px] font-bold text-slate-800 tracking-tight">
+                  Bulk Update Status
+                </h3>
+                <p className="text-[11px] text-[#e67e22] font-bold tracking-widest mt-1 uppercase">
+                  Updating {selectedIds.length} Selected Records
+                </p>
+              </div>
+              <button
+                onClick={() => setBulkUpdateModalOpen(false)}
+                className="w-8 h-8 rounded-full bg-gray-50 hover:bg-gray-100 text-gray-500 flex items-center justify-center transition"
+              >
+                <i className="fas fa-times text-sm"></i>
+              </button>
+            </div>
+
+            <form
+              onSubmit={handleBulkUpdateSubmit}
+              className="p-6 space-y-5 bg-[#f0f2f5]/40"
+            >
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">
+                  Delivery Status
+                </label>
+                <select
+                  required
+                  value={bulkUpdateData.delivery_status}
+                  onChange={(e) =>
+                    setBulkUpdateData({
+                      ...bulkUpdateData,
+                      delivery_status: e.target.value,
+                    })
+                  }
+                  className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#e67e22] focus:ring-4 focus:ring-blue-50 outline-none text-[13px] font-bold text-slate-800 transition"
+                >
+                  <option value="Pending">Pending</option>
+                  <option value="Delivered">Delivered</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">
+                  Delivery Date
+                </label>
+                <input
+                  type="date"
+                  value={bulkUpdateData.delivery_date}
+                  onChange={(e) =>
+                    setBulkUpdateData({
+                      ...bulkUpdateData,
+                      delivery_date: e.target.value,
+                    })
+                  }
+                  className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#e67e22] focus:ring-4 focus:ring-blue-50 outline-none text-[13px] font-bold text-slate-800 transition"
+                />
+              </div>
+
+              <div className="pt-2 flex justify-end gap-3 border-t border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => setBulkUpdateModalOpen(false)}
                   className="px-6 py-2.5 bg-white border border-gray-200 text-gray-600 font-bold text-[11px] uppercase tracking-widest rounded-xl hover:bg-gray-50 transition"
                 >
                   Cancel

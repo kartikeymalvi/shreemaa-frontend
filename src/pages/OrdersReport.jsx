@@ -4685,12 +4685,10 @@ export default function OrdersReport() {
                           <div className="font-semibold">
                             Inw: {order?.grpo_qty || 0}
                           </div>
-                          
                         </td>
                       )}
                       {showCol("show_grpo") && (
                         <td className="px-4 py-3 border border-gray-200 text-[12px] text-slate-700">
-                          
                           <div className="font-semibold text-slate-500">
                             ₹{formatIndianNumber(order?.grpo_amount)}
                           </div>
@@ -4735,6 +4733,41 @@ export default function OrdersReport() {
                                 className="w-8 h-8 rounded-md bg-white border border-gray-200 text-gray-500 hover:text-[#ff4d4f] hover:border-red-200 shadow-sm flex items-center justify-center transition"
                               >
                                 <i className="fas fa-trash-alt text-[12px]"></i>
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  const confirm = await Swal.fire({
+                                    title: "Cancel this Order?",
+                                    text: "This will mark it Complete and move details to the Refund tab.",
+                                    icon: "warning",
+                                    showCancelButton: true,
+                                    confirmButtonColor: "#dc2626",
+                                    confirmButtonText: "Yes, Cancel Order",
+                                  });
+                                  if (confirm.isConfirmed) {
+                                    try {
+                                      await api.post(
+                                        `reports/orders/${order.id}/cancel/`,
+                                      );
+                                      Swal.fire(
+                                        "Cancelled",
+                                        "Order details moved to Refunds",
+                                        "success",
+                                      );
+                                      fetchData();
+                                    } catch (e) {
+                                      Swal.fire(
+                                        "Error",
+                                        "Could not cancel order",
+                                        "error",
+                                      );
+                                    }
+                                  }
+                                }}
+                                title="Cancel Order & Send to Refund"
+                                className="w-8 h-8 rounded-lg bg-white border border-gray-200 text-gray-500 hover:text-[#ff4d4f] hover:bg-red-50 shadow-sm flex items-center justify-center transition"
+                              >
+                                <i className="fas fa-ban text-[12px]"></i>
                               </button>
                             </>
                           )}
@@ -5354,6 +5387,23 @@ export default function OrdersReport() {
                   {
                     label: "Order Amount",
                     value: `₹ ${(viewSummaryData.order_amount || 0).toLocaleString("en-IN")}`,
+                  },
+                  // 🔥 Naya CN Amount Field Yahan Add Kiya Hai 🔥
+                  {
+                    label: "CN Amount",
+                    value: `₹ ${(viewSummaryData.cn_amount || 0).toLocaleString("en-IN")}`,
+                  },
+                  {
+                    label: "SAP PO No",
+                    value: viewSummaryData.sap_po_no || "-",
+                  },
+                  {
+                    label: "Seller Name",
+                    value: viewSummaryData.seller_name || "-",
+                  },
+                  {
+                    label: "Seller GSTN",
+                    value: viewSummaryData.seller_gstn || "-",
                   },
                 ].map((item, i) => (
                   <div
