@@ -4335,7 +4335,12 @@ export default function OrdersReport() {
 
                 {showCol("show_seller_info") && (
                   <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-                    Seller Info
+                    Seller name
+                  </th>
+                )}
+                {showCol("show_seller_info") && (
+                  <th className="px-4 py-3 border border-gray-200 bg-gray-50">
+                    Seller GSTN
                   </th>
                 )}
                 {showCol("show_asin_fsn") && (
@@ -4382,7 +4387,12 @@ export default function OrdersReport() {
 
                 {showCol("show_delivered") && (
                   <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-                    Delivered (Qty/Amt)
+                    Delivered Qty
+                  </th>
+                )}
+                {showCol("show_delivered") && (
+                  <th className="px-4 py-3 border border-gray-200 bg-gray-50">
+                    Delivered Amt
                   </th>
                 )}
                 {showCol("show_cancel_qty") && (
@@ -4397,17 +4407,32 @@ export default function OrdersReport() {
                 )}
                 {showCol("show_discrepancy") && (
                   <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-                    Discrepancy (Qty/Amt)
+                    Discrepancy Qty
+                  </th>
+                )}
+                {showCol("show_discrepancy") && (
+                  <th className="px-4 py-3 border border-gray-200 bg-gray-50">
+                    Discrepancy Amt
                   </th>
                 )}
                 {showCol("show_refund") && (
                   <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-                    Refund (Qty/Amt)
+                    Refund Qty
+                  </th>
+                )}
+                {showCol("show_refund") && (
+                  <th className="px-4 py-3 border border-gray-200 bg-gray-50">
+                    Refund Amt
                   </th>
                 )}
                 {showCol("show_grpo") && (
                   <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-                    GRPO (Qty/Amt)
+                    GRPO Qty
+                  </th>
+                )}
+                {showCol("show_grpo") && (
+                  <th className="px-4 py-3 border border-gray-200 bg-gray-50">
+                    GRPO Amt
                   </th>
                 )}
 
@@ -4534,6 +4559,10 @@ export default function OrdersReport() {
                           <div className="font-semibold text-slate-700">
                             {order?.seller_name || "-"}
                           </div>
+                        </td>
+                      )}
+                      {showCol("show_seller_info") && (
+                        <td className="px-4 py-3 border border-gray-200">
                           <div className="text-[11px] text-slate-500 font-mono tracking-wider">
                             {order?.seller_gstn || "-"}
                           </div>
@@ -4603,6 +4632,10 @@ export default function OrdersReport() {
                           <span className="font-bold">
                             {order?.delivered_qty || 0}
                           </span>
+                        </td>
+                      )}
+                      {showCol("show_delivered") && (
+                        <td className="px-4 py-3 border border-gray-200 text-slate-700">
                           <span className="text-slate-500 font-medium ml-1.5 text-xs">
                             (₹{formatIndianNumber(order?.delivered_amount)})
                           </span>
@@ -4624,6 +4657,10 @@ export default function OrdersReport() {
                           <div className="font-semibold">
                             Qty: {order?.discrepancy_qty || 0}
                           </div>
+                        </td>
+                      )}
+                      {showCol("show_discrepancy") && (
+                        <td className="px-4 py-3 border border-gray-200 text-[12px] text-slate-700">
                           <div className="font-semibold text-slate-500">
                             ₹{formatIndianNumber(order?.discrepancy_amount)}
                           </div>
@@ -4634,6 +4671,10 @@ export default function OrdersReport() {
                           <div className="font-semibold">
                             Ref: {order?.refund_qty || 0}
                           </div>
+                        </td>
+                      )}
+                      {showCol("show_refund") && (
+                        <td className="px-4 py-3 border border-gray-200 text-[12px] text-slate-700">
                           <div className="font-semibold text-slate-500">
                             ₹{formatIndianNumber(order?.pending_refund)}
                           </div>
@@ -4644,6 +4685,12 @@ export default function OrdersReport() {
                           <div className="font-semibold">
                             Inw: {order?.grpo_qty || 0}
                           </div>
+                          
+                        </td>
+                      )}
+                      {showCol("show_grpo") && (
+                        <td className="px-4 py-3 border border-gray-200 text-[12px] text-slate-700">
+                          
                           <div className="font-semibold text-slate-500">
                             ₹{formatIndianNumber(order?.grpo_amount)}
                           </div>

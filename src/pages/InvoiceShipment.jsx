@@ -2807,7 +2807,7 @@ export default function InvoiceShipment() {
                       )}
                       {showCol("show_model_name") && (
                         <td
-                          className="px-4 py-3 border border-gray-200 font-medium text-slate-700 max-w-[150px] truncate"
+                          className="px-4 py-3 border border-gray-200 font-medium text-slate-700"
                           title={ship?.model_name}
                         >
                           {ship?.model_name || "-"}
