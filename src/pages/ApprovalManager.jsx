@@ -2177,8 +2177,21 @@ export default function ApprovalManager() {
     try {
       await api.post(`reports/approvals/${id}/${actionType}/`);
       fetchApprovals();
+      Swal.fire({
+        icon: "success",
+        title: "Success!",
+        text: `Request ${actionType}d successfully.`,
+        timer: 1500,
+        showConfirmButton: false,
+      });
     } catch (error) {
-      alert("Failed: " + error.message);
+      // 🔥 ASLI BACKEND ERROR FETCH KARNE KA TARIQA 🔥
+      const errorMsg = error.response?.data?.error || error.message;
+      Swal.fire({
+        icon: "error",
+        title: "Action Failed",
+        text: errorMsg,
+      });
     }
   };
 
