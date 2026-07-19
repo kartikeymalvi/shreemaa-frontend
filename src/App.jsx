@@ -18,20 +18,14 @@ import ApprovalManager from "./pages/ApprovalManager";
 import GRPOManager from "./pages/GRPOManager";
 import RefundTicketManager from "./pages/RefundTicketManager";
 import RefundManager from "./pages/RefundManager";
+
+// 🔥 FIX: SettingsProvider ko yahan import karna zaroori hai 🔥
+import { SettingsProvider } from "./context/SettingsContext";
+
 function App() {
   return (
-    <>
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          duration: 3000,
-          style: {
-            fontSize: "14px",
-            fontWeight: "600",
-            borderRadius: "10px",
-          },
-        }}
-      />
+    // 🔥 FIX: Poori app ko SettingsProvider se wrap karna hai 🔥
+    <SettingsProvider>
       <Router>
         <Routes>
           {/* Pages without Sidebar (Public) */}
@@ -43,23 +37,21 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/orders-report" element={<OrdersReport />} />
 
-            {/* DYNAMIC MASTER ROUTE: Ye ek akela route Firm, Location aur Merchant teeno ko handle kar lega */}
+            {/* DYNAMIC MASTER ROUTE */}
             <Route path="/master/:type" element={<MasterManager />} />
 
             {/* Default redirect to dashboard if someone types wrong URL inside layout */}
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
             <Route path="/invoice-shipment" element={<InvoiceShipment />} />
-            <Route path="track-id" element={<TrackId />} />
-            {/* approoval path */}
+            <Route path="/track-id" element={<TrackId />} />
             <Route path="/approvals" element={<ApprovalManager />} />
-            {/* GRPO path */}
             <Route path="/grpo" element={<GRPOManager />} />
             <Route path="/issue-ticket" element={<RefundTicketManager />} />
             <Route path="/refund" element={<RefundManager />} />
           </Route>
         </Routes>
       </Router>
-    </>
+    </SettingsProvider>
   );
 }
 

@@ -1757,6 +1757,21 @@ const parseIndianNumber = (str) => {
 };
 
 // --- Reusable Modern SVG Icons ---
+
+export const IconWhatsApp = () => (
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+  </svg>
+);
 export const IconDownload = () => (
   <svg
     width="16"
@@ -1936,6 +1951,13 @@ export default function ApprovalManager() {
     purchase_price_raw: "",
     cn_amt_raw: "0",
     link_used: "No",
+    placed_qty: "0",
+    order_nlc_raw: "0",
+    total_placed_amt_raw: "0",
+    total_cn_amt_raw: "0",
+    placed_by: "",
+    payment_method: "",
+    sap_po_no: "",
     expected_delivery_date: new Date(
       new Date().setDate(new Date().getDate() + 1),
     )
@@ -2042,6 +2064,15 @@ export default function ApprovalManager() {
           cn_amt_raw: item.cn_amt || "0",
           link_used: item.link_used || "No",
           expected_delivery_date: item.expected_delivery_date || "",
+
+          // 🔥 NAYE FIELDS KO FORM MEIN LOAD KARANE KE LIYE 🔥
+          placed_qty: item.placed_qty || "0",
+          order_nlc_raw: item.order_nlc || "0",
+          total_placed_amt_raw: item.total_placed_amt || "0",
+          total_cn_amt_raw: item.total_cn_amt || "0",
+          placed_by: item.placed_by || "",
+          payment_method: item.payment_method || "",
+          sap_po_no: item.sap_po_no || "",
         };
       });
       setItemsList(loadedItems);
@@ -2071,18 +2102,36 @@ export default function ApprovalManager() {
         const selectedModel = dropdowns.models.find(
           (m) => String(m.id) === String(item.product_model),
         );
+
+        const reqQtyNum = parseInt(item.req_qty) || 0;
         const pPrice = parseIndianNumber(item.purchase_price_raw);
         const cnAmt = parseIndianNumber(item.cn_amt_raw);
+
+        const placedQtyNum = parseInt(item.placed_qty) || 0;
+        const orderNlcNum = parseIndianNumber(item.order_nlc_raw);
+        const totalPlacedAmtNum = parseIndianNumber(item.total_placed_amt_raw);
+        const totalCnAmtNum = parseIndianNumber(item.total_cn_amt_raw);
+
         return {
           asin_fsn: selectedModel ? selectedModel.asin_fsn : "",
           model_name: item.model_name_log || "Unknown",
           model_no: item.model_no_log || "-",
-          req_qty: parseInt(item.req_qty) || 0,
+          req_qty: reqQtyNum,
           purchase_price: pPrice,
           cn_amt: cnAmt,
-          agreed_nlc: pPrice - cnAmt,
+          agreed_nlc: reqQtyNum * pPrice - cnAmt,
           link_used: item.link_used || "No",
           expected_delivery_date: item.expected_delivery_date,
+
+          // 🔥 NAYE FIELDS AB DATABASE MEIN SAVE HONGE 🔥
+          placed_qty: placedQtyNum,
+          order_nlc: orderNlcNum,
+          total_placed_amt: totalPlacedAmtNum,
+          total_cn_amt: totalCnAmtNum,
+          variance_qty: placedQtyNum - reqQtyNum, // Automatically calculate ho jayega!
+          placed_by: item.placed_by || "",
+          payment_method: item.payment_method || "",
+          sap_po_no: item.sap_po_no || "",
         };
       });
 
@@ -2147,6 +2196,70 @@ export default function ApprovalManager() {
     const data = approvals.find((a) => a.id === id);
     setViewData(data);
     setIsViewModalOpen(true);
+  };
+  // 🔥 NO-EMOJI WHATSAPP NOTIFICATION WITH ALL DETAILS 🔥
+  const handleWhatsAppNotify = async (app) => {
+    const { value: phone } = await Swal.fire({
+      title: "WhatsApp Notification",
+      input: "text",
+      inputLabel: "Enter Admin's WhatsApp Number (without +91)",
+      inputPlaceholder: "e.g. 9876543210",
+      showCancelButton: true,
+      confirmButtonText: "Send message",
+      confirmButtonColor: "#1677ff",
+      inputValidator: (value) => {
+        if (!value || value.length !== 10 || isNaN(value)) {
+          return "Please enter a valid 10-digit number!";
+        }
+      },
+    });
+
+    if (phone) {
+      const firmName = app.firm_detail?.name || "N/A";
+      const merchantName = app.merchant_detail?.name || "N/A";
+      const billLoc = app.bill_location_detail?.name || "N/A";
+      const shipLoc = app.ship_location_detail?.name || "N/A";
+
+      let message =
+        `New Approval Request\n\n` +
+        `Approval No: ${app.approval_no}\n` +
+        `Request Date: ${app.request_date}\n` +
+        `Requested By: ${app.requested_by}\n` +
+        `Merchant_ID: ${app.merchant_account_id || "-"}\n` +
+        `Firm Name: ${firmName}\n` +
+        `Bill Location: ${billLoc}\n` +
+        `Ship Location: ${shipLoc}\n` +
+        `Merchant: ${merchantName}\n\n` +
+        `--- Line Items ---\n\n`;
+
+      app.items?.forEach((item, index) => {
+        message +=
+          `[Item ${index + 1}]\n` +
+          `ASIN/FSN: ${item.asin_fsn || "-"}\n` +
+          `Model Name: ${item.model_name || "-"}\n` +
+          `Req Qty: ${item.req_qty || 0}\n` +
+          `Purchase/Unit Price: Rs. ${formatIndianNumber(item.purchase_price)}\n` +
+          `Cn Amt: Rs. ${formatIndianNumber(item.cn_amt)}\n` +
+          `Agreed NLC: Rs. ${formatIndianNumber(item.agreed_nlc)}\n` +
+          `Link Used: ${item.link_used || "-"}\n` +
+          `Expected Delivery: ${item.expected_delivery_date || "-"}\n` +
+          `Placed Qty: ${item.placed_qty || 0}\n` +
+          `Order NLC: Rs. ${formatIndianNumber(item.order_nlc)}\n` +
+          `Total Placed Amt: Rs. ${formatIndianNumber(item.total_placed_amt)}\n` +
+          `Total CN Amt: Rs. ${formatIndianNumber(item.total_cn_amt)}\n` +
+          `Variance Qty: ${item.variance_qty || 0}\n` +
+          `Placed By: ${item.placed_by || "-"}\n` +
+          `Payment Method: ${item.payment_method || "-"}\n` +
+          `SAP PO No: ${item.sap_po_no || "-"}\n\n`;
+      });
+
+      message +=
+        `Please review and approve this order:\n` +
+        `https://shreemaa-frontend.vercel.app/approvals`;
+
+      const whatsappUrl = `https://wa.me/91${phone}?text=${encodeURIComponent(message)}`;
+      window.open(whatsappUrl, "_blank");
+    }
   };
 
   const handleExportData = () => {
@@ -3003,6 +3116,14 @@ export default function ApprovalManager() {
                                   <i className="fas fa-pen text-[12px]"></i>
                                 </button>
                               )}
+                            {/* WhatsApp Notification Button */}
+                            <button
+                              onClick={() => handleWhatsAppNotify(app)}
+                              title="Notify via WhatsApp"
+                              className="w-8 h-8 rounded-lg bg-green-50 border border-green-200 text-[#25D366] hover:text-white hover:bg-[#25D366] shadow-sm flex items-center justify-center transition"
+                            >
+                              <IconWhatsApp />
+                            </button>
 
                             {/* 4. ADMIN-ONLY SUPER POWERS (Approve, Reject, Delete) */}
                             {role === "ADMIN" && (
@@ -3412,11 +3533,14 @@ export default function ApprovalManager() {
                   </div>
 
                   {itemsList.map((item, index) => {
+                    const reqQtyNum = parseInt(item.req_qty) || 0; // Quantity uthayi
                     const pPriceNum = parseIndianNumber(
                       item.purchase_price_raw,
-                    );
-                    const cnAmtNum = parseIndianNumber(item.cn_amt_raw);
-                    const agreedNLC = pPriceNum - cnAmtNum;
+                    ); // Unit Price uthaya
+                    const cnAmtNum = parseIndianNumber(item.cn_amt_raw); // CN Amount uthaya
+
+                    // 🔥 NAYA MATH: (Quantity * Unit Price) - CN Amt 🔥
+                    const agreedNLC = reqQtyNum * pPriceNum - cnAmtNum;
 
                     return (
                       <div
@@ -3586,6 +3710,142 @@ export default function ApprovalManager() {
                               }
                               className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#1677ff] focus:ring-4 focus:ring-blue-50 outline-none text-[13px] font-semibold text-slate-800 transition"
                             />
+                          </div>
+                          {/* 🔥 POST-PLACEMENT DETAILS BHARNE KE LIYE NAYA BLOCK 🔥 */}
+                          <div className="col-span-1 md:col-span-4 border-t border-gray-100 mt-2 pt-4">
+                            <h5 className="text-[10px] font-bold text-[#e67e22] uppercase tracking-widest mb-3">
+                              <i className="fas fa-truck-loading"></i>{" "}
+                              Post-Placement Details (Optional)
+                            </h5>
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-x-5 gap-y-4">
+                              <div>
+                                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
+                                  Placed Qty
+                                </label>
+                                <input
+                                  type="number"
+                                  name="placed_qty"
+                                  value={item.placed_qty}
+                                  onChange={(e) =>
+                                    handleItemChange(
+                                      item.id,
+                                      e.target.name,
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#1677ff] outline-none text-[13px] font-bold text-slate-800"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
+                                  Order NLC
+                                </label>
+                                <input
+                                  type="text"
+                                  name="order_nlc_raw"
+                                  value={item.order_nlc_raw}
+                                  onChange={(e) =>
+                                    handleItemChange(
+                                      item.id,
+                                      e.target.name,
+                                      e.target.value.replace(/[^0-9.]/g, ""),
+                                    )
+                                  }
+                                  className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#1677ff] outline-none text-[13px] font-bold text-slate-800"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
+                                  Total Placed Amt
+                                </label>
+                                <input
+                                  type="text"
+                                  name="total_placed_amt_raw"
+                                  value={item.total_placed_amt_raw}
+                                  onChange={(e) =>
+                                    handleItemChange(
+                                      item.id,
+                                      e.target.name,
+                                      e.target.value.replace(/[^0-9.]/g, ""),
+                                    )
+                                  }
+                                  className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#1677ff] outline-none text-[13px] font-bold text-slate-800"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
+                                  Total CN Amt
+                                </label>
+                                <input
+                                  type="text"
+                                  name="total_cn_amt_raw"
+                                  value={item.total_cn_amt_raw}
+                                  onChange={(e) =>
+                                    handleItemChange(
+                                      item.id,
+                                      e.target.name,
+                                      e.target.value.replace(/[^0-9.]/g, ""),
+                                    )
+                                  }
+                                  className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-red-400 outline-none text-[13px] font-bold text-red-500"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
+                                  Placed By
+                                </label>
+                                <input
+                                  type="text"
+                                  name="placed_by"
+                                  value={item.placed_by}
+                                  onChange={(e) =>
+                                    handleItemChange(
+                                      item.id,
+                                      e.target.name,
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#1677ff] outline-none text-[13px] font-semibold text-slate-800"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
+                                  Payment Method
+                                </label>
+                                <input
+                                  type="text"
+                                  name="payment_method"
+                                  value={item.payment_method}
+                                  onChange={(e) =>
+                                    handleItemChange(
+                                      item.id,
+                                      e.target.name,
+                                      e.target.value,
+                                    )
+                                  }
+                                  placeholder="e.g. Credit Card"
+                                  className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#1677ff] outline-none text-[13px] font-semibold text-slate-800"
+                                />
+                              </div>
+                              <div className="col-span-1 md:col-span-2">
+                                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
+                                  SAP PO No
+                                </label>
+                                <input
+                                  type="text"
+                                  name="sap_po_no"
+                                  value={item.sap_po_no}
+                                  onChange={(e) =>
+                                    handleItemChange(
+                                      item.id,
+                                      e.target.name,
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#1677ff] outline-none text-[13px] font-mono text-slate-800"
+                                />
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>

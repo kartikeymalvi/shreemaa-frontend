@@ -3777,21 +3777,24 @@ export default function OrdersReport() {
       seller_name,
       ...itemDetails
     } = order;
+
+    // 🔥 FIX: Ensure ki values null na jayen aur properly auto-fill hon 🔥
     setHeaderData({
-      order_id,
-      txn_date,
-      month,
-      day,
-      merchant,
-      merchant_id,
-      firm,
-      location,
-      txn_detail,
-      card_no,
-      placed_by,
-      seller_gstn,
-      seller_name,
+      order_id: order_id || "",
+      txn_date: txn_date || "",
+      month: month || "",
+      day: day || "",
+      merchant: merchant || "",
+      merchant_id: merchant_id || "",
+      firm: firm || "",
+      location: location || "",
+      txn_detail: txn_detail || "",
+      card_no: card_no || "",
+      placed_by: placed_by || "",
+      seller_gstn: seller_gstn || "",
+      seller_name: seller_name || "",
     });
+
     setItemsData([itemDetails]);
     setEditId(order.id);
     setEditMode(true);
@@ -5193,17 +5196,43 @@ export default function OrdersReport() {
                             ASIN / FSN *
                           </label>
                           <select
+                            required
                             name="asin_fsn"
                             value={item.asin_fsn}
-                            onChange={(e) => handleItemChange(index, e)}
+                            onChange={(e) =>
+                              handleItemChange(
+                                item.id || index,
+                                e.target.name,
+                                e.target.value,
+                              )
+                            }
                             className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#e67e22] focus:ring-4 focus:ring-blue-50 outline-none text-[13px] font-semibold text-slate-800 transition"
                           >
                             <option value="">-- Search & Select --</option>
-                            {masterModels.map((m) => (
-                              <option key={m.id} value={m.asin_fsn}>
-                                {m.asin_fsn}
-                              </option>
-                            ))}
+
+                            {/* 🔥 DYNAMIC DROPDOWN LOGIC 🔥 */}
+                            {!editMode
+                              ? // Agar NAYA order ban raha hai, toh poori Master list dikhao
+                                masterModels.map((m) => (
+                                  <option key={m.id} value={m.asin_fsn}>
+                                    {m.asin_fsn}
+                                  </option>
+                                ))
+                              : // Agar EDIT mode hai, toh sirf is Order ID ke existing ASINs dikhao
+                                orders
+                                  .filter(
+                                    (o) => o.order_id === headerData.order_id,
+                                  )
+                                  .map((o) => o.asin_fsn)
+                                  .filter(
+                                    (value, i, self) =>
+                                      self.indexOf(value) === i,
+                                  ) // Remove duplicates
+                                  .map((asin, i) => (
+                                    <option key={i} value={asin}>
+                                      {asin}
+                                    </option>
+                                  ))}
                           </select>
                         </div>
                         <div>

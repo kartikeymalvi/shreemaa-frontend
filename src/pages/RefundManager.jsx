@@ -282,24 +282,35 @@ export default function RefundManager() {
                       >
                         {r.received_comment || "-"}
                       </td>
-
+                      {/* 🔥 ACTION COLUMN 🔥 */}
                       <td className="px-4 py-3 text-center bg-white z-10">
                         <div className="flex items-center justify-center gap-2">
+                          {/* 1. UPDATE BUTTON (Sabke liye - Opens Screenshot 2 Popup) */}
                           <button
                             onClick={() => handleUpdateClick(r)}
-                            title="Update Record"
-                            className="w-8 h-8 rounded-md bg-white border border-gray-200 text-blue-500 hover:text-blue-600 hover:bg-blue-50 shadow-sm flex items-center justify-center transition"
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-600 font-bold text-[10px] uppercase tracking-widest rounded-md border border-emerald-200 hover:bg-emerald-500 hover:text-white transition shadow-sm"
                           >
-                            <i className="fas fa-pen text-[12px]"></i>
+                            <i className="fas fa-sync-alt"></i> Update
                           </button>
+
+                          {/* 2. ADMIN ONLY: PENCIL & TRASH */}
                           {role === "ADMIN" && (
-                            <button
-                              onClick={() => handleDelete(r.id)}
-                              title="Delete Record"
-                              className="w-8 h-8 rounded-md bg-white border border-gray-200 text-red-400 hover:text-red-500 hover:bg-red-50 shadow-sm flex items-center justify-center transition"
-                            >
-                              <i className="fas fa-trash-alt text-[12px]"></i>
-                            </button>
+                            <>
+                              <button
+                                onClick={() => handleUpdateClick(r)}
+                                title="Edit Full Record"
+                                className="w-8 h-8 rounded-md bg-white border border-gray-200 text-blue-500 hover:text-blue-600 hover:bg-blue-50 shadow-sm flex items-center justify-center transition"
+                              >
+                                <i className="fas fa-pen text-[12px]"></i>
+                              </button>
+                              <button
+                                onClick={() => handleDelete(r.id)}
+                                title="Delete Record"
+                                className="w-8 h-8 rounded-md bg-white border border-gray-200 text-red-400 hover:text-red-500 hover:bg-red-50 shadow-sm flex items-center justify-center transition"
+                              >
+                                <i className="fas fa-trash-alt text-[12px]"></i>
+                              </button>
+                            </>
                           )}
                         </div>
                       </td>
