@@ -795,9 +795,9 @@
 //     </div>
 //   );
 // }
-
 import React, { useState, useEffect, useRef } from "react";
 import api from "../api/axios";
+import Swal from "sweetalert2";
 
 // Helper: Indian Number Currency Formatting
 const formatIndianNumber = (num) => {
@@ -806,11 +806,6 @@ const formatIndianNumber = (num) => {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(num);
-};
-
-const parseIndianNumber = (str) => {
-  if (!str) return 0;
-  return parseFloat(str.toString().replace(/,/g, "")) || 0;
 };
 
 // PREMIUM OUTLINE SVG ICONS
@@ -890,6 +885,24 @@ export const IconFilter = () => (
     <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
   </svg>
 );
+export const IconTemplate = () => (
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+    <polyline points="14 2 14 8 20 8"></polyline>
+    <line x1="16" y1="13" x2="8" y2="13"></line>
+    <line x1="16" y1="17" x2="8" y2="17"></line>
+    <polyline points="10 9 9 9 8 9"></polyline>
+  </svg>
+);
 
 export default function GRPOManager() {
   const role = localStorage.getItem("user_role") || "USER";
@@ -954,6 +967,52 @@ export default function GRPOManager() {
   const handleFilterChange = (e) =>
     setFilters({ ...filters, [e.target.name]: e.target.value });
 
+  // 🔥 SMART AUTO-FETCH LOGIC 🔥
+  const handleAutoFetchInvoice = async () => {
+    if (!formData.grpo_invoice_number.trim()) {
+      return Swal.fire(
+        "Required",
+        "Please enter Invoice Number first!",
+        "info",
+      );
+    }
+
+    setLoading(true);
+    try {
+      const res = await api.get(
+        `reports/fetch-invoice-grpo/${formData.grpo_invoice_number}/`,
+      );
+      const invData = res.data[0]; // If multiple items, currently picking the first one
+
+      setFormData((prev) => ({
+        ...prev,
+        firm_name: invData.firm_name || prev.firm_name,
+        purchase_vendor_name:
+          invData.purchase_vendor_name || prev.purchase_vendor_name,
+        item_code: invData.item_code || prev.item_code,
+        description: invData.description || prev.description,
+        grpo_quantity: invData.grpo_quantity || prev.grpo_quantity,
+        grpo_amt: invData.grpo_amt || prev.grpo_amt,
+      }));
+
+      Swal.fire({
+        icon: "success",
+        title: "Auto-Filled!",
+        text: "Invoice details synced successfully.",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    } catch (e) {
+      Swal.fire(
+        "Not Found",
+        "Could not find this Invoice Number in system.",
+        "error",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // --- CRUD FUNCTIONS ---
   const handleAddNew = () => {
     setEditModeId(null);
@@ -990,31 +1049,48 @@ export default function GRPOManager() {
 
       if (editModeId) {
         await api.put(`reports/grpo/${editModeId}/`, payload);
-        alert("GRPO Record Updated Successfully!");
+        Swal.fire({
+          icon: "success",
+          title: "Updated!",
+          text: "GRPO Record Updated Successfully!",
+          confirmButtonColor: "#0f172a",
+        });
       } else {
         await api.post("reports/grpo/", payload);
-        alert("New GRPO Record Saved Successfully!");
+        Swal.fire({
+          icon: "success",
+          title: "Saved!",
+          text: "New GRPO Record Saved Successfully!",
+          confirmButtonColor: "#0f172a",
+        });
       }
       setIsFormModalOpen(false);
       fetchGRPO();
     } catch (err) {
-      alert("Save Failed: " + err.message);
+      Swal.fire("Error", "Save Failed: " + err.message, "error");
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id) => {
-    if (
-      !window.confirm("Are you sure you want to delete this GRPO completely?")
-    )
-      return;
-    try {
-      await api.delete(`reports/grpo/${id}/`);
-      alert("GRPO Record Deleted!");
-      fetchGRPO();
-    } catch (err) {
-      alert("Delete failed: " + err.message);
+    if (role !== "ADMIN") return;
+    const confirm = await Swal.fire({
+      title: "Delete Record?",
+      text: "Are you sure you want to delete this GRPO completely?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#dc2626",
+      confirmButtonText: "Yes, delete!",
+    });
+    if (confirm.isConfirmed) {
+      try {
+        await api.delete(`reports/grpo/${id}/`);
+        Swal.fire("Deleted!", "GRPO Record Deleted!", "success");
+        fetchGRPO();
+      } catch (err) {
+        Swal.fire("Error", "Delete failed: " + err.message, "error");
+      }
     }
   };
 
@@ -1029,13 +1105,22 @@ export default function GRPOManager() {
 
     try {
       setLoading(true);
-      await api.post("reports/grpo/upload_excel/", formDataFile, {
+      const res = await api.post("reports/grpo/upload_excel/", formDataFile, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      alert("Excel Bulk Data Imported Successfully!");
+      Swal.fire({
+        icon: "success",
+        title: "Uploaded!",
+        text: res.data.message || "Excel Bulk Data Imported Successfully!",
+        confirmButtonColor: "#0f172a",
+      });
       fetchGRPO();
     } catch (err) {
-      alert("Upload Failed: " + err.message);
+      Swal.fire(
+        "Upload Failed",
+        err.response?.data?.error || err.message,
+        "error",
+      );
     } finally {
       setLoading(false);
       e.target.value = null;
@@ -1045,7 +1130,7 @@ export default function GRPOManager() {
   // --- EXCEL EXPORT & TEMPLATE ---
   const handleExportData = () => {
     if (filteredGRPO.length === 0)
-      return alert("No matching rows to download!");
+      return Swal.fire("Notice", "No matching rows to download!", "info");
     let csv =
       "Firm Name,Internal Number,GRPO Status,GRPO User Name,GRPO No.,GRPO Invoice Number,GRPO Create Date,GRPO Posting Date,Purchase Vendor Code,Purchase Vendor Name,Inward WHS Code,Item Code,Description,GRPO Quantity,GRPO Amt\n";
 
@@ -1070,7 +1155,6 @@ export default function GRPOManager() {
     link.click();
   };
 
-  // --- FLEXIBLE WORD SEARCH ---
   const flexibleMatch = (fieldValue, searchInput) => {
     if (!searchInput) return true;
     if (!fieldValue) return false;
@@ -1079,7 +1163,6 @@ export default function GRPOManager() {
     return words.some((word) => text.includes(word));
   };
 
-  // 🔥 UNIVERSAL SEARCH FILTER LOGIC 🔥
   const filteredGRPO = grpoData.filter((g) => {
     let match = true;
 
@@ -1099,11 +1182,9 @@ export default function GRPOManager() {
         g.grpo_quantity,
         g.grpo_amt,
       ];
-
       const isMatched = searchFields.some((field) =>
         String(field).toLowerCase().includes(s),
       );
-
       if (!isMatched) match = false;
     }
 
@@ -1128,54 +1209,61 @@ export default function GRPOManager() {
     return match;
   });
 
-  const renderStatusBadge = (status) => {
-    if (status === "Cleared")
-      return (
-        <span className="px-2.5 py-1 bg-emerald-50 text-emerald-600 font-bold rounded-md text-[10px] border border-emerald-100 uppercase tracking-widest">
-          Cleared
-        </span>
-      );
-    if (status === "Cancelled")
-      return (
-        <span className="px-2.5 py-1 bg-rose-50 text-rose-600 font-bold rounded-md text-[10px] border border-rose-100 uppercase tracking-widest">
-          Cancelled
-        </span>
-      );
-    return (
-      <span className="px-2.5 py-1 bg-blue-50 text-[#1677ff] font-bold rounded-md text-[10px] border border-blue-100 uppercase tracking-widest">
-        Open
-      </span>
-    );
+  const getBadgeStyle = (status) => {
+    const s = String(status || "")
+      .trim()
+      .toLowerCase();
+    if (s === "cleared" || s === "completed")
+      return {
+        bg: "bg-emerald-50 text-emerald-700 border-emerald-300",
+        dot: "bg-emerald-600",
+      };
+    if (s === "cancelled")
+      return {
+        bg: "bg-rose-50 text-rose-700 border-rose-300",
+        dot: "bg-rose-600",
+      };
+    return {
+      bg: "bg-amber-50 text-amber-700 border-amber-300",
+      dot: "bg-amber-600",
+    };
   };
 
   return (
-    <div className="w-full max-w-[1600px] mx-auto animate-in fade-in duration-300 pb-10">
+    <div className="bg-transparent font-sans h-full flex flex-col pb-4 text-slate-700">
+      <style>{`
+        .custom-table-scrollbar::-webkit-scrollbar { height: 10px; width: 10px; }
+        .custom-table-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        .custom-table-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 5px; }
+        .custom-table-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+      `}</style>
+
       {/* --- HEADER --- */}
-      <div className="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3">
+      <div className="bg-white px-6 py-4 border border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4 rounded-t-xl mb-4">
         <div>
           <p className="text-[12px] text-gray-400 font-medium mb-1 tracking-wide">
-            Modules / <span className="text-slate-600">GRPO</span>
+            Warehouse & Logistics /{" "}
+            <span className="text-slate-600">SAP-GRPO</span>
           </p>
-          <h1 className="text-[20px] font-bold text-slate-800 tracking-tight">
+          <h1 className="text-xl font-bold text-slate-800 tracking-tight">
             GRPO Management
           </h1>
         </div>
       </div>
 
-      {/* --- MAIN CARD --- */}
-      <div className="bg-white rounded-[16px] shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100/50 overflow-hidden flex flex-col">
-        {/* CARD TOOLBAR */}
-        <div className="flex flex-col md:flex-row justify-between items-center px-6 py-5 border-b border-gray-50 gap-4 bg-white">
+      {/* --- MAIN CARD WRAPPER --- */}
+      <div className="bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden flex flex-col flex-1">
+        {/* TOOLBAR */}
+        <div className="flex flex-col md:flex-row justify-between items-center px-6 py-4 border-b border-gray-100 bg-white gap-4 flex-shrink-0">
           <div className="flex items-center gap-3 w-full md:w-auto">
-            {/* SEARCH BAR */}
-            <div className="flex items-center bg-gray-50/80 px-4 py-2.5 rounded-full w-full md:w-[300px] border border-gray-100 focus-within:bg-white focus-within:border-[#1677ff] focus-within:ring-4 focus-within:ring-blue-50 transition-all">
+            <div className="flex items-center bg-gray-50/80 px-4 py-2.5 rounded-full w-full md:w-[320px] border border-gray-100 focus-within:bg-white focus-within:border-[#e67e22] focus-within:ring-2 focus-within:ring-blue-50 transition-all">
               <IconSearch />
               <input
                 type="text"
                 placeholder="Search No., Vendor or Item..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="bg-transparent border-none outline-none ml-2 text-[13px] w-full font-medium text-slate-700 placeholder-gray-400"
+                className="bg-transparent border-none outline-none ml-3 text-[13px] w-full font-medium text-slate-700 placeholder-gray-400"
               />
               {searchTerm && (
                 <button
@@ -1189,9 +1277,9 @@ export default function GRPOManager() {
 
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-1.5 px-4 py-2.5 rounded-full border text-[13px] font-bold transition-colors shadow-sm ${
+              className={`flex items-center gap-1.5 px-4 py-2.5 rounded-full border text-[13px] font-bold transition-colors shadow-sm whitespace-nowrap ${
                 showFilters
-                  ? "bg-blue-50 border-blue-200 text-[#1677ff]"
+                  ? "bg-blue-50 border-blue-200 text-[#e67e22]"
                   : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50"
               }`}
             >
@@ -1199,38 +1287,38 @@ export default function GRPOManager() {
             </button>
           </div>
 
-          {/* ACTION BUTTONS */}
-          <div className="flex items-center gap-3 w-full md:w-auto overflow-x-auto [&::-webkit-scrollbar]:hidden">
+          <div className="flex items-center gap-3 w-full md:w-auto overflow-x-auto [&::-webkit-scrollbar]:hidden pb-1 md:pb-0">
             <input
               type="file"
               ref={fileInputRef}
               onChange={handleFileUpload}
               className="hidden"
+              accept=".xlsx, .csv"
             />
 
             <div className="flex items-center gap-2 bg-white p-1.5 rounded-[12px] border border-gray-200 shadow-sm">
               <button
                 onClick={handleDownloadTemplate}
                 title="Download Template"
-                className="flex items-center justify-center px-3 h-8 text-slate-500 bg-gray-50 rounded-lg hover:bg-blue-50 hover:text-[#1677ff] transition font-bold text-[11px]"
+                className="flex items-center justify-center px-3 h-8 text-slate-500 bg-gray-50 rounded-lg hover:bg-blue-50 hover:text-[#e67e22] transition font-bold text-[11px]"
               >
-                Template
+                <IconTemplate />
+              </button>
+              <button
+                onClick={handleUploadClick}
+                title="Upload Excel"
+                className="flex items-center justify-center w-8 h-8 text-slate-500 bg-gray-50 rounded-lg hover:bg-green-50 hover:text-[#52c41a] transition"
+              >
+                <IconUpload />
               </button>
               <button
                 onClick={handleExportData}
                 title="Export Database"
-                className="flex items-center justify-center w-8 h-8 text-slate-500 bg-gray-50 rounded-lg hover:bg-purple-50 hover:text-purple-600 transition"
+                className="flex items-center justify-center w-8 h-8 text-slate-500 bg-gray-50 rounded-lg hover:bg-purple-50 hover:text-[#722ed1] transition"
               >
                 <IconDownload />
               </button>
             </div>
-
-            <button
-              onClick={handleUploadClick}
-              className="flex items-center gap-2 px-5 py-2.5 bg-[#e67e22] hover:bg-[#d35400] text-white rounded-[10px] transition font-bold text-[13px] shadow-md shadow-[#e67e22]/20 whitespace-nowrap"
-            >
-              <IconUpload /> Upload Excel
-            </button>
 
             <button
               onClick={handleAddNew}
@@ -1243,10 +1331,10 @@ export default function GRPOManager() {
 
         {/* EXPANDABLE FILTERS */}
         {showFilters && (
-          <div className="px-6 py-4 bg-[#fafafa] border-b border-gray-100">
+          <div className="px-6 py-4 bg-[#fafafa] border-b border-gray-100 flex-shrink-0 animate-in slide-in-from-top-2">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
               <div>
-                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
+                <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">
                   Create Date
                 </label>
                 <input
@@ -1254,11 +1342,11 @@ export default function GRPOManager() {
                   name="grpo_create_date"
                   value={filters.grpo_create_date}
                   onChange={handleFilterChange}
-                  className="w-full bg-white border border-gray-200 p-2.5 rounded-lg text-sm outline-none focus:border-[#1677ff]"
+                  className="w-full bg-white border border-gray-200 rounded-xl p-2.5 outline-none focus:border-[#e67e22] text-sm transition"
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
+                <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">
                   Firm Name
                 </label>
                 <input
@@ -1267,11 +1355,11 @@ export default function GRPOManager() {
                   value={filters.firm_name}
                   placeholder="Search firm..."
                   onChange={handleFilterChange}
-                  className="w-full bg-white border border-gray-200 p-2.5 rounded-lg text-sm outline-none focus:border-[#1677ff]"
+                  className="w-full bg-white border border-gray-200 rounded-xl p-2.5 outline-none focus:border-[#e67e22] text-sm transition"
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
+                <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">
                   Vendor Name
                 </label>
                 <input
@@ -1280,18 +1368,18 @@ export default function GRPOManager() {
                   value={filters.purchase_vendor_name}
                   placeholder="e.g. Cloud Retail"
                   onChange={handleFilterChange}
-                  className="w-full bg-white border border-gray-200 p-2.5 rounded-lg text-sm outline-none focus:border-[#1677ff]"
+                  className="w-full bg-white border border-gray-200 rounded-xl p-2.5 outline-none focus:border-[#e67e22] text-sm transition"
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
+                <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">
                   GRPO Status
                 </label>
                 <select
                   name="grpo_status"
                   value={filters.grpo_status}
                   onChange={handleFilterChange}
-                  className="w-full bg-white border border-gray-200 p-2.5 rounded-lg text-sm outline-none focus:border-[#1677ff]"
+                  className="w-full bg-white border border-gray-200 rounded-xl p-2.5 outline-none focus:border-[#e67e22] text-sm transition"
                 >
                   <option value="">All Status</option>
                   <option value="Open">Open</option>
@@ -1308,7 +1396,7 @@ export default function GRPOManager() {
                     grpo_create_date: "",
                   })
                 }
-                className="w-full p-2.5 bg-white border border-gray-200 text-gray-500 text-[12px] font-bold uppercase tracking-widest rounded-lg hover:bg-gray-50 transition"
+                className="w-full p-2.5 bg-white border border-gray-200 text-gray-600 text-[11px] font-bold uppercase tracking-widest rounded-xl hover:bg-gray-100 transition shadow-sm"
               >
                 Clear All
               </button>
@@ -1316,138 +1404,170 @@ export default function GRPOManager() {
           </div>
         )}
 
-        {/* DATA TABLE */}
-        <div className="overflow-x-auto w-full [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] min-h-[450px]">
-          <table className="w-full text-left min-w-max border-collapse">
-            <thead className="bg-gray-50/80 border-b border-gray-200 text-slate-500 text-[10px] font-bold uppercase tracking-widest sticky top-0 backdrop-blur-md z-10">
+        {/* 🔥 UNIFORM DATA TABLE 🔥 */}
+        <div className="overflow-auto custom-table-scrollbar w-full flex-1 border-t border-gray-200 min-h-[60vh] max-h-[calc(100vh-180px)]">
+          <table className="w-full text-left min-w-max border-collapse whitespace-nowrap">
+            <thead className="bg-gray-50 text-slate-600 text-[11px] font-bold uppercase tracking-wider sticky top-0 z-20 shadow-sm">
               <tr>
-                <th className="p-4 pl-6 whitespace-nowrap bg-gray-50/80">
+                <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
+                  #
+                </th>
+                <th className="px-4 py-3 border border-gray-200 bg-gray-50">
                   GRPO No
                 </th>
-                <th className="p-4 whitespace-nowrap bg-gray-50/80">Date</th>
-                <th className="p-4 whitespace-nowrap bg-gray-50/80">
+                <th className="px-4 py-3 border border-gray-200 bg-gray-50">
+                  Date
+                </th>
+                <th className="px-4 py-3 border border-gray-200 bg-gray-50">
                   Firm Name
                 </th>
-                <th className="p-4 whitespace-nowrap bg-gray-50/80">
+                <th className="px-4 py-3 border border-gray-200 bg-gray-50">
                   Vendor Name
                 </th>
-                <th className="p-4 whitespace-nowrap bg-gray-50/80">
+                <th className="px-4 py-3 border border-gray-200 bg-gray-50">
                   Item Code
                 </th>
-                <th className="p-4 min-w-[200px] bg-gray-50/80">Description</th>
-                <th className="p-4 whitespace-nowrap text-center bg-gray-50/80">
+                <th className="px-4 py-3 border border-gray-200 bg-gray-50 min-w-[250px]">
+                  Description
+                </th>
+                <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
                   Quantity
                 </th>
-                <th className="p-4 whitespace-nowrap text-right bg-gray-50/80">
+                <th className="px-4 py-3 text-right border border-gray-200 bg-gray-50">
                   Amount
                 </th>
-                <th className="p-4 whitespace-nowrap text-center bg-gray-50/80">
+                <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
                   Status
                 </th>
-                <th className="p-4 text-right pr-6 sticky right-0 bg-gray-50/90 border-l border-gray-100 z-20">
+                <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50 z-30">
                   Action
                 </th>
               </tr>
             </thead>
-            <tbody className="text-[13px] font-medium text-slate-700 bg-white">
+            <tbody className="bg-white">
               {filteredGRPO.length === 0 ? (
                 <tr>
-                  <td colSpan="10" className="p-16 text-center">
+                  <td
+                    colSpan="11"
+                    className="p-16 text-center border border-gray-200"
+                  >
                     <div className="flex flex-col items-center justify-center">
                       <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3 border border-gray-100">
                         <i className="fas fa-inbox text-2xl text-gray-300"></i>
                       </div>
-                      <p className="font-bold text-slate-600">
+                      <p className="font-bold text-[13px] text-slate-600">
                         No Records Found
                       </p>
                     </div>
                   </td>
                 </tr>
               ) : (
-                filteredGRPO.map((row) => (
-                  <tr
-                    key={row.id}
-                    className="border-b border-gray-50 last:border-0 hover:bg-blue-50/30 transition-colors group"
-                  >
-                    <td className="p-4 pl-6 font-mono font-bold text-[#1677ff] whitespace-nowrap">
-                      {row.grpo_no}
-                    </td>
-                    <td className="p-4 whitespace-nowrap text-gray-500">
-                      {row.grpo_create_date}
-                    </td>
-                    <td className="p-4 whitespace-nowrap text-slate-700">
-                      {row.firm_name}
-                    </td>
-                    <td className="p-4 whitespace-nowrap">
-                      <div className="text-slate-800 font-bold">
-                        {row.purchase_vendor_name}
-                      </div>
-                      <div className="text-[11px] text-gray-400 mt-0.5 font-mono">
-                        Code: {row.purchase_vendor_code}
-                      </div>
-                    </td>
-                    <td className="p-4 font-mono font-bold text-slate-600 whitespace-nowrap">
-                      {row.item_code}
-                    </td>
-                    <td
-                      className="p-4 whitespace-normal text-slate-700 truncate max-w-[200px]"
-                      title={row.description}
+                filteredGRPO.map((row, index) => {
+                  const badgeStyle = getBadgeStyle(row.grpo_status);
+                  return (
+                    <tr
+                      key={row.id}
+                      className="hover:bg-blue-50/30 transition-colors group"
                     >
-                      {row.description}
-                    </td>
-                    <td className="p-4 text-center font-bold text-slate-800">
-                      {row.grpo_quantity}
-                    </td>
-                    <td className="p-4 font-black text-right text-emerald-600 whitespace-nowrap">
-                      ₹{formatIndianNumber(row.grpo_amt)}
-                    </td>
-                    <td className="p-4 text-center whitespace-nowrap">
-                      {renderStatusBadge(row.grpo_status)}
-                    </td>
-
-                    <td className="p-4 text-right pr-6 sticky right-0 bg-white group-hover:bg-blue-50/10 transition-colors z-10 whitespace-nowrap border-l border-gray-100">
-                      <div className="flex justify-end items-center gap-2">
-                        <button
-                          onClick={() => handleView(row.id)}
-                          title="View Detail"
-                          className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-200 text-gray-500 hover:text-[#1677ff] hover:bg-blue-50 shadow-sm flex items-center justify-center transition"
+                      <td className="px-4 py-3 text-center border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+                        {(index + 1).toString().padStart(2, "0")}
+                      </td>
+                      <td className="px-4 py-3 border border-gray-200 font-mono font-bold text-[#e67e22] whitespace-nowrap text-[13px]">
+                        {row.grpo_no || "-"}
+                      </td>
+                      <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+                        {row.grpo_create_date || "-"}
+                      </td>
+                      <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-bold">
+                        {row.firm_name || "-"}
+                      </td>
+                      <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700">
+                        <div className="font-bold">
+                          {row.purchase_vendor_name || "-"}
+                        </div>
+                        <div className="text-[11px] text-gray-400 font-mono">
+                          Code: {row.purchase_vendor_code || "-"}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 border border-gray-200 font-mono font-bold text-slate-600 whitespace-nowrap text-[13px]">
+                        {row.item_code || "-"}
+                      </td>
+                      <td className="px-4 py-3 border border-gray-200 text-[13px] text-slate-700 font-medium whitespace-normal min-w-[250px] leading-relaxed">
+                        {row.description || "-"}
+                      </td>
+                      <td className="px-4 py-3 text-center border border-gray-200 text-[13px] font-bold text-slate-800">
+                        {row.grpo_quantity || "0"}
+                      </td>
+                      <td className="px-4 py-3 text-right border border-gray-200 whitespace-nowrap text-[13px] font-black text-emerald-600">
+                        ₹{formatIndianNumber(row.grpo_amt)}
+                      </td>
+                      <td className="px-4 py-3 text-center border border-gray-200 whitespace-nowrap">
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold tracking-widest uppercase border border-dashed ${badgeStyle.bg}`}
                         >
-                          <i className="fas fa-eye text-[12px]"></i>
-                        </button>
-                        <button
-                          onClick={() => handleEdit(row.id)}
-                          title="Edit Record"
-                          className="w-8 h-8 rounded-lg bg-white border border-gray-200 text-gray-500 hover:text-[#e67e22] hover:border-[#e67e22]/30 shadow-sm flex items-center justify-center transition"
-                        >
-                          <i className="fas fa-pen text-[12px]"></i>
-                        </button>
-                        {role === "ADMIN" && (
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full ${badgeStyle.dot}`}
+                          ></span>
+                          {row.grpo_status || "Open"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-center border border-gray-200 bg-white z-10 whitespace-nowrap">
+                        <div className="flex items-center justify-center gap-2 transition-opacity">
                           <button
-                            onClick={() => handleDelete(row.id)}
-                            title="Delete Record"
-                            className="w-8 h-8 rounded-lg bg-white border border-gray-200 text-gray-500 hover:text-red-500 hover:bg-red-50 shadow-sm flex items-center justify-center transition"
+                            onClick={() => handleView(row.id)}
+                            title="View Detail"
+                            className="w-8 h-8 rounded-md bg-gray-50 border border-gray-200 text-gray-500 hover:text-[#722ed1] hover:bg-purple-50 hover:border-purple-200 shadow-sm flex items-center justify-center transition"
                           >
-                            <i className="fas fa-trash-alt text-[12px]"></i>
+                            <i className="fas fa-eye text-[12px]"></i>
                           </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                          {role === "ADMIN" && (
+                            <>
+                              <button
+                                onClick={() => handleEdit(row.id)}
+                                title="Edit Record"
+                                className="w-8 h-8 rounded-md bg-white border border-gray-200 text-gray-500 hover:text-blue-500 hover:bg-blue-50 shadow-sm flex items-center justify-center transition"
+                              >
+                                <i className="fas fa-pen text-[12px]"></i>
+                              </button>
+                              <button
+                                onClick={() => handleDelete(row.id)}
+                                title="Delete Record"
+                                className="w-8 h-8 rounded-md bg-white border border-gray-200 text-gray-500 hover:text-red-500 hover:bg-red-50 shadow-sm flex items-center justify-center transition"
+                              >
+                                <i className="fas fa-trash-alt text-[12px]"></i>
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
         </div>
+
+        {/* FOOTER */}
+        <div className="flex justify-between items-center px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex-shrink-0">
+          <div className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">
+            Total Records:{" "}
+            <span className="text-[#e67e22] text-[13px]">
+              {filteredGRPO.length}
+            </span>
+          </div>
+        </div>
       </div>
 
-      {/* 🚀 VIEW MODAL (ALL 15 FIELDS FULL AUDIT) 🚀 */}
+      {/* 🚀 VIEW MODAL */}
       {isViewModalOpen && viewData && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in">
           <div className="bg-white rounded-2xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95">
             <div className="px-8 py-5 border-b border-gray-100 flex justify-between items-center bg-white">
-              <h3 className="text-[16px] font-bold text-slate-800 tracking-tight">
-                GRPO Audit Data Sheet —{" "}
-                <span className="text-[#1677ff] font-mono">
+              <h3 className="text-[16px] font-bold text-slate-800 tracking-tight flex items-center gap-2">
+                <i className="fas fa-file-invoice text-[#e67e22]"></i> GRPO
+                Audit Data Sheet —{" "}
+                <span className="text-[#e67e22] font-mono">
                   {viewData.grpo_no}
                 </span>
               </h3>
@@ -1474,10 +1594,10 @@ export default function GRPOManager() {
                 ))}
               </div>
             </div>
-            <div className="flex justify-end gap-3 px-8 py-5 border-t border-gray-100 bg-gray-50/50 rounded-b-2xl">
+            <div className="flex justify-end gap-3 px-8 py-5 border-t border-gray-100 bg-white rounded-b-2xl">
               <button
                 onClick={() => setIsViewModalOpen(false)}
-                className="px-6 py-2.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 font-bold tracking-widest uppercase rounded-xl text-[12px] transition shadow-sm"
+                className="px-6 py-2.5 bg-gray-50 border border-gray-200 hover:bg-gray-100 text-gray-600 font-bold tracking-widest uppercase rounded-xl text-[12px] transition shadow-sm"
               >
                 Close
               </button>
@@ -1486,17 +1606,17 @@ export default function GRPOManager() {
         </div>
       )}
 
-      {/* 🚀 FORM MODAL (CREATE / EDIT) 🚀 */}
+      {/* 🚀 SMART FORM MODAL (CREATE / EDIT) 🚀 */}
       {isFormModalOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in">
-          <div className="bg-white rounded-2xl w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95">
+          <div className="bg-white rounded-2xl w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh] animate-in zoom-in-95">
             <div className="px-8 py-5 border-b border-gray-100 flex justify-between items-center bg-white">
               <div>
                 <h3 className="text-[18px] font-bold text-slate-800 tracking-tight">
                   {editModeId ? "Edit GRPO Record" : "New GRPO Entry"}
                 </h3>
                 <p className="text-[12px] text-gray-400 font-medium mt-0.5">
-                  Fill in the details carefully for goods inwarding.
+                  Fetch from Invoice or fill manually.
                 </p>
               </div>
               <button
@@ -1508,63 +1628,104 @@ export default function GRPOManager() {
             </div>
 
             <div className="p-8 overflow-y-auto custom-scrollbar bg-[#f0f2f5]/40">
+              {/* 🔥 SMART AUTO-FETCH UI 🔥 */}
+              {!editModeId && (
+                <div className="flex flex-col md:flex-row gap-4 mb-6 bg-white p-5 rounded-2xl border border-gray-100 shadow-sm items-end">
+                  <div className="flex-1">
+                    <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">
+                        GRPO Invoice No.
+                    </label>
+                    <input
+                      type="text"
+                      name="grpo_invoice_number"
+                      value={formData.grpo_invoice_number}
+                      onChange={handleInputChange}
+                      placeholder="e.g. INV-2026-001..."
+                      className="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl outline-none focus:border-[#e67e22] focus:ring-4 focus:ring-blue-50 font-medium text-slate-700 text-sm transition"
+                    />
+                  </div>
+                  <button
+                    onClick={handleAutoFetchInvoice}
+                    disabled={loading}
+                    className="bg-slate-900 hover:bg-slate-800 text-white text-[12px] font-bold uppercase tracking-widest px-8 py-3 rounded-xl shadow-md transition w-full md:w-auto flex items-center justify-center gap-2 border border-slate-900"
+                  >
+                    {loading ? (
+                      <i className="fas fa-spinner fa-spin"></i>
+                    ) : (
+                      <i className="fas fa-sync-alt"></i>
+                    )}{" "}
+                    Fetch Data
+                  </button>
+                </div>
+              )}
+
               <form
                 id="grpoForm"
                 onSubmit={handleSubmit}
                 className="grid grid-cols-1 md:grid-cols-3 gap-5 bg-white p-6 rounded-[16px] border border-gray-100 shadow-sm"
               >
-                {Object.keys(initialState).map((fieldKey) => (
-                  <div key={fieldKey}>
-                    <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
-                      {fieldKey.replace(/_/g, " ")}
-                    </label>
-                    {fieldKey.includes("date") ? (
-                      <input
-                        type="date"
-                        required
-                        name={fieldKey}
-                        value={formData[fieldKey]}
-                        onChange={handleInputChange}
-                        className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#1677ff] focus:ring-4 focus:ring-blue-50 outline-none text-[13px] font-semibold text-slate-800 transition"
-                      />
-                    ) : fieldKey === "grpo_status" ? (
-                      <select
-                        name={fieldKey}
-                        value={formData[fieldKey]}
-                        onChange={handleInputChange}
-                        className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#1677ff] focus:ring-4 focus:ring-blue-50 outline-none text-[13px] font-semibold text-slate-800 transition"
-                      >
-                        <option value="Open">Open</option>
-                        <option value="Cleared">Cleared</option>
-                        <option value="Cancelled">Cancelled</option>
-                      </select>
-                    ) : (
-                      <input
-                        type={
-                          fieldKey === "grpo_amt" ||
-                          fieldKey === "grpo_quantity"
-                            ? "number"
-                            : "text"
-                        }
-                        step="any"
-                        required={fieldKey !== "description"}
-                        name={fieldKey}
-                        value={formData[fieldKey]}
-                        onChange={handleInputChange}
-                        className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#1677ff] focus:ring-4 focus:ring-blue-50 outline-none text-[13px] font-semibold text-slate-800 transition"
-                        placeholder={`Enter ${fieldKey.replace(/_/g, " ")}...`}
-                      />
-                    )}
-                  </div>
-                ))}
+                {Object.keys(initialState).map((fieldKey) => {
+                  // Skip invoice number if not edit mode (it's in the top bar)
+                  if (!editModeId && fieldKey === "grpo_invoice_number")
+                    return null;
+
+                  return (
+                    <div key={fieldKey}>
+                      <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">
+                        {fieldKey.replace(/_/g, " ")}
+                      </label>
+                      {fieldKey.includes("date") ? (
+                        <input
+                          type="date"
+                          required
+                          name={fieldKey}
+                          value={formData[fieldKey]}
+                          onChange={handleInputChange}
+                          className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#e67e22] focus:ring-4 focus:ring-blue-50 outline-none text-[13px] font-semibold text-slate-800 transition"
+                        />
+                      ) : fieldKey === "grpo_status" ? (
+                        <select
+                          name={fieldKey}
+                          value={formData[fieldKey]}
+                          onChange={handleInputChange}
+                          className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#e67e22] focus:ring-4 focus:ring-blue-50 outline-none text-[13px] font-semibold text-slate-800 transition"
+                        >
+                          <option value="Open">Open</option>
+                          <option value="Cleared">Cleared</option>
+                          <option value="Cancelled">Cancelled</option>
+                        </select>
+                      ) : (
+                        <input
+                          type={
+                            fieldKey === "grpo_amt" ||
+                            fieldKey === "grpo_quantity"
+                              ? "number"
+                              : "text"
+                          }
+                          step="any"
+                          required={
+                            fieldKey !== "description" &&
+                            fieldKey !== "inward_whs_code" &&
+                            fieldKey !== "purchase_vendor_code"
+                          }
+                          name={fieldKey}
+                          value={formData[fieldKey]}
+                          onChange={handleInputChange}
+                          className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#e67e22] focus:ring-4 focus:ring-blue-50 outline-none text-[13px] font-semibold text-slate-800 transition"
+                          placeholder={`Enter ${fieldKey.replace(/_/g, " ")}...`}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
               </form>
             </div>
 
-            <div className="flex justify-end gap-3 px-8 py-5 border-t border-gray-100 bg-gray-50/50 rounded-b-2xl">
+            <div className="flex justify-end gap-3 px-8 py-5 border-t border-gray-100 bg-white rounded-b-2xl">
               <button
                 type="button"
                 onClick={() => setIsFormModalOpen(false)}
-                className="px-6 py-2.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 font-bold tracking-widest uppercase rounded-xl text-[12px] transition shadow-sm"
+                className="px-6 py-2.5 bg-gray-50 border border-gray-200 hover:bg-gray-100 text-gray-600 font-bold tracking-widest uppercase rounded-xl text-[12px] transition shadow-sm"
               >
                 Cancel
               </button>
@@ -1572,7 +1733,7 @@ export default function GRPOManager() {
                 type="submit"
                 form="grpoForm"
                 disabled={loading}
-                className="px-6 py-2.5 bg-[#e67e22] hover:bg-[#d35400] text-white font-bold tracking-widest uppercase rounded-xl text-[12px] transition shadow-md shadow-[#e67e22]/20 disabled:opacity-50"
+                className="px-8 py-2.5 bg-[#e67e22] hover:bg-[#d35400] text-white font-bold tracking-widest uppercase rounded-xl text-[12px] transition shadow-md shadow-[#e67e22]/20 disabled:opacity-50"
               >
                 {loading ? "Saving..." : "Save Record"}
               </button>

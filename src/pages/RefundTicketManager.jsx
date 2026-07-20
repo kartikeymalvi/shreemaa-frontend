@@ -55,6 +55,21 @@ export const IconTicket = () => (
     <path d="M15 5.88 14 10l5.12.33a1 1 0 0 1 .53 1.77l-12 10a1 1 0 0 1-1.6-.96l1-4.14-5.12-.33a1 1 0 0 1-.53-1.77l12-10a1 1 0 0 1 1.6.96Z" />
   </svg>
 );
+export const IconEdit = () => (
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+  </svg>
+);
 
 export default function RefundTicketManager() {
   const username = localStorage.getItem("username") || "Demo User";
@@ -67,8 +82,11 @@ export default function RefundTicketManager() {
 
   // --- MODAL & FORM STATES ---
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [selectedTicket, setSelectedTicket] = useState(null);
+
   const [fetchingInvoice, setFetchingInvoice] = useState(false);
-  const [invoiceItems, setInvoiceItems] = useState([]); // Stores fetched ASINs from invoice
+  const [invoiceItems, setInvoiceItems] = useState([]);
 
   const initialFormState = {
     invoice_no: "",
@@ -79,7 +97,7 @@ export default function RefundTicketManager() {
     location: "",
     asin: "",
     model: "",
-    unit_price: 0, // Hidden field for calculation
+    unit_price: 0,
     complaint_type: "",
     discrepancy_qty: "",
     discrepancy_amount: "",
@@ -88,7 +106,7 @@ export default function RefundTicketManager() {
   };
   const [formData, setFormData] = useState(initialFormState);
 
-  // Load Initial Data (Mocked or API)
+  // Load Initial Data
   useEffect(() => {
     fetchTickets();
   }, []);
@@ -96,13 +114,10 @@ export default function RefundTicketManager() {
   const fetchTickets = async () => {
     try {
       setLoading(true);
-      // Replace with your actual endpoint
       const res = await api.get("reports/tickets/");
       setTickets(res.data);
     } catch (err) {
-      console.warn(
-        "API Note: Ticket endpoint might not be ready yet. Showing empty table.",
-      );
+      console.warn("API Note: Ticket endpoint error or empty.");
       setTickets([]);
     } finally {
       setLoading(false);
@@ -115,11 +130,10 @@ export default function RefundTicketManager() {
 
     setFetchingInvoice(true);
     try {
-      // API call to your InvoiceShipments endpoint to search by invoice_no
       const res = await api.get(
         `reports/shipments/?invoice_no=${formData.invoice_no}`,
       );
-      const items = res.data?.results || res.data; // Handle paginated or direct array
+      const items = res.data?.results || res.data;
 
       if (items && items.length > 0) {
         setInvoiceItems(items);
@@ -129,10 +143,10 @@ export default function RefundTicketManager() {
           ...prev,
           invoice_date: master.txn_date || "",
           order_id: master.order_id || "",
-          order_date: master.txn_date || "", // Assuming order date matches or adjust if available
+          order_date: master.txn_date || "",
           merchant: master.seller_name || master.firm || "",
           location: master.location || "",
-          asin: "", // Reset ASIN selection
+          asin: "",
           model: "",
           unit_price: 0,
         }));
@@ -153,18 +167,15 @@ export default function RefundTicketManager() {
     const { name, value } = e.target;
     let updatedForm = { ...formData, [name]: value };
 
-    // If user changes ASIN, fetch its corresponding Model and Unit Price
     if (name === "asin") {
       const selectedItem = invoiceItems.find((item) => item.asin_fsn === value);
       if (selectedItem) {
-        // Find price: use purchase_price, unit_price, or calculate from amount/qty based on your DB schema
         const price =
           selectedItem.purchase_price || selectedItem.unit_price || 0;
         updatedForm.model =
           selectedItem.model_no || selectedItem.model_name || "";
         updatedForm.unit_price = parseFloat(price);
 
-        // Recalculate amount if Qty is already typed
         if (updatedForm.discrepancy_qty) {
           updatedForm.discrepancy_amount = (
             updatedForm.unit_price * parseFloat(updatedForm.discrepancy_qty)
@@ -173,7 +184,6 @@ export default function RefundTicketManager() {
       }
     }
 
-    // If user types Qty, multiply by hidden unit_price automatically
     if (name === "discrepancy_qty") {
       const qty = parseFloat(value) || 0;
       updatedForm.discrepancy_amount = (qty * formData.unit_price).toFixed(2);
@@ -187,7 +197,6 @@ export default function RefundTicketManager() {
   };
 
   // --- SUBMIT TICKET ---
-  // --- SUBMIT TICKET ---
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.asin || !formData.complaint_type) {
@@ -195,19 +204,14 @@ export default function RefundTicketManager() {
     }
 
     const submitData = new FormData();
-
-    // Safely append data, ignoring null photos and unit_price
     Object.keys(formData).forEach((key) => {
       if (key === "photo") {
-        if (formData.photo) {
-          submitData.append("photo", formData.photo);
-        }
+        if (formData.photo) submitData.append("photo", formData.photo);
       } else if (key !== "unit_price") {
         submitData.append(key, formData[key] || "");
       }
     });
 
-    // Add auto-fields for the backend
     submitData.append("raised_by", username);
     submitData.append("raised_date", todayDate);
     submitData.append("ticket_status", "Open");
@@ -220,11 +224,42 @@ export default function RefundTicketManager() {
       alert("Ticket Raised Successfully!");
       setIsModalOpen(false);
       setFormData(initialFormState);
-      fetchTickets(); // Refresh table
+      fetchTickets();
     } catch (err) {
-      // Improved error logging to see EXACTLY what Django rejected
       console.error("Backend Error:", err.response?.data);
       alert("Failed to raise ticket: Check console for exact error.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // --- UPDATE TICKET STATUS (TRIGGERS REFUND) ---
+  const handleUpdateStatus = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const updateData = new FormData();
+    updateData.append("ticket_status", selectedTicket.ticket_status);
+    if (selectedTicket.credit_note_no)
+      updateData.append("credit_note_no", selectedTicket.credit_note_no);
+    if (selectedTicket.refund_received_amt)
+      updateData.append(
+        "refund_received_amt",
+        selectedTicket.refund_received_amt,
+      );
+    if (selectedTicket.remark)
+      updateData.append("remark", selectedTicket.remark);
+
+    try {
+      await api.patch(`reports/tickets/${selectedTicket.id}/`, updateData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      alert("Ticket Status Updated Successfully!");
+      setIsUpdateModalOpen(false);
+      fetchTickets();
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update ticket.");
     } finally {
       setLoading(false);
     }
@@ -246,18 +281,25 @@ export default function RefundTicketManager() {
 
   // --- STATUS BADGE COMPONENT ---
   const renderStatusBadge = (status) => {
-    if (status === "Resolved" || status === "Closed")
+    if (status?.includes("Resolved") || status?.includes("Closed"))
       return (
         <span className="px-2.5 py-1 bg-emerald-50 text-emerald-600 font-bold rounded-md text-[10px] border border-emerald-100 uppercase tracking-widest">
           Resolved
         </span>
       );
-    if (status === "Rejected")
+    if (status?.includes("Discrepancy Confirmed"))
       return (
         <span className="px-2.5 py-1 bg-rose-50 text-rose-600 font-bold rounded-md text-[10px] border border-rose-100 uppercase tracking-widest">
+          Discrepancy
+        </span>
+      );
+    if (status === "Rejected" || status === "Reject")
+      return (
+        <span className="px-2.5 py-1 bg-gray-100 text-gray-500 font-bold rounded-md text-[10px] border border-gray-200 uppercase tracking-widest">
           Rejected
         </span>
       );
+
     return (
       <span className="px-2.5 py-1 bg-amber-50 text-amber-600 font-bold rounded-md text-[10px] border border-amber-100 uppercase tracking-widest">
         {status || "Open"}
@@ -271,7 +313,8 @@ export default function RefundTicketManager() {
       <div className="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3">
         <div>
           <p className="text-[12px] text-gray-400 font-medium mb-1 tracking-wide">
-            Modules / <span className="text-slate-600">Issue & Ticket</span>
+            Support & Settings /{" "}
+            <span className="text-slate-600">Issue & Ticket</span>
           </p>
           <h1 className="text-[20px] font-bold text-slate-800 tracking-tight">
             Customer Support Tickets
@@ -279,7 +322,7 @@ export default function RefundTicketManager() {
         </div>
       </div>
 
-      {/* --- SUMMARY CARDS (Like Screenshot) --- */}
+      {/* --- SUMMARY CARDS --- */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white p-5 rounded-[16px] shadow-sm border border-gray-100 border-l-4 border-l-[#1677ff]">
           <p className="text-[11px] text-gray-400 font-bold uppercase tracking-widest">
@@ -330,7 +373,6 @@ export default function RefundTicketManager() {
             />
           </div>
 
-          {/* 🔥 RAISE TICKET BUTTON (Orange Theme) 🔥 */}
           <button
             onClick={() => setIsModalOpen(true)}
             className="flex items-center gap-2 px-5 py-2.5 bg-[#e67e22] hover:bg-[#d35400] text-white rounded-[10px] transition font-bold text-[13px] shadow-md shadow-[#e67e22]/20 whitespace-nowrap"
@@ -339,7 +381,7 @@ export default function RefundTicketManager() {
           </button>
         </div>
 
-        {/* --- MASSIVE SCROLLABLE TABLE --- */}
+        {/* --- SCROLLABLE TABLE --- */}
         <div className="overflow-x-auto w-full [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] min-h-[400px]">
           <table className="w-full text-left min-w-max border-collapse">
             <thead className="bg-gray-50/80 border-b border-gray-200 text-slate-500 text-[10px] font-bold uppercase tracking-widest sticky top-0 backdrop-blur-md z-10">
@@ -379,62 +421,76 @@ export default function RefundTicketManager() {
                   </td>
                 </tr>
               ) : (
-                tickets.map((t) => (
-                  <tr
-                    key={t.id}
-                    className="border-b border-gray-50 hover:bg-blue-50/30 transition-colors group"
-                  >
-                    <td className="p-4 pl-6 font-mono font-bold text-[#1677ff] whitespace-nowrap sticky left-0 bg-white group-hover:bg-[#f4f7fa] shadow-[1px_0_0_#f3f4f6] z-10">
-                      {t.ticket_no || `TCK-${t.id}`}
-                    </td>
-                    <td className="p-4 whitespace-nowrap">
-                      {renderStatusBadge(t.ticket_status)}
-                    </td>
-                    <td className="p-4 font-mono whitespace-nowrap">
-                      {t.invoice_no}
-                    </td>
-                    <td className="p-4 font-mono text-gray-500 whitespace-nowrap">
-                      {t.order_id}
-                    </td>
-                    <td className="p-4 font-bold text-slate-700 whitespace-nowrap">
-                      {t.asin}
-                    </td>
-                    <td className="p-4 " title={t.model}>
-                      {t.model}
-                    </td>
-                    <td className="p-4 whitespace-nowrap text-rose-500">
-                      {t.complaint_type}
-                    </td>
-                    <td className="p-4 text-center font-bold text-slate-800">
-                      {t.discrepancy_qty}
-                    </td>
-                    <td className="p-4 text-right text-rose-600 font-bold">
-                      ₹{formatIndianNumber(t.discrepancy_amount)}
-                    </td>
-                    <td className="p-4 text-slate-500 whitespace-nowrap">
-                      {t.raised_by}
-                    </td>
-                    <td className="p-4 text-slate-500 whitespace-nowrap">
-                      {t.raised_date}
-                    </td>
-                    <td className="p-4 font-mono text-gray-400 whitespace-nowrap">
-                      {t.credit_note_no || "—"}
-                    </td>
-                    <td className="p-4 text-right text-emerald-600 font-bold whitespace-nowrap">
-                      {t.refund_received_amt
-                        ? `₹${formatIndianNumber(t.refund_received_amt)}`
-                        : "—"}
-                    </td>
-                    <td className="p-4 text-right pr-6 sticky right-0 bg-white group-hover:bg-blue-50/10 border-l border-gray-100 z-10">
-                      <button
-                        title="View Detail"
-                        className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-200 text-gray-500 hover:text-[#1677ff] hover:bg-blue-50 shadow-sm flex items-center justify-center transition ml-auto"
-                      >
-                        <i className="fas fa-eye text-[12px]"></i>
-                      </button>
-                    </td>
-                  </tr>
-                ))
+                tickets
+                  .filter(
+                    (t) =>
+                      t.ticket_no
+                        ?.toLowerCase()
+                        .includes(searchTerm.toLowerCase()) ||
+                      t.invoice_no
+                        ?.toLowerCase()
+                        .includes(searchTerm.toLowerCase()),
+                  )
+                  .map((t) => (
+                    <tr
+                      key={t.id}
+                      className="border-b border-gray-50 hover:bg-blue-50/30 transition-colors group"
+                    >
+                      <td className="p-4 pl-6 font-mono font-bold text-[#1677ff] whitespace-nowrap sticky left-0 bg-white group-hover:bg-[#f4f7fa] shadow-[1px_0_0_#f3f4f6] z-10">
+                        {t.ticket_no || `TCK-${t.id}`}
+                      </td>
+                      <td className="p-4 whitespace-nowrap">
+                        {renderStatusBadge(t.ticket_status)}
+                      </td>
+                      <td className="p-4 font-mono whitespace-nowrap">
+                        {t.invoice_no}
+                      </td>
+                      <td className="p-4 font-mono text-gray-500 whitespace-nowrap">
+                        {t.order_id}
+                      </td>
+                      <td className="p-4 font-bold text-slate-700 whitespace-nowrap">
+                        {t.asin}
+                      </td>
+                      <td className="p-4" title={t.model}>
+                        {t.model}
+                      </td>
+                      <td className="p-4 whitespace-nowrap text-rose-500">
+                        {t.complaint_type}
+                      </td>
+                      <td className="p-4 text-center font-bold text-slate-800">
+                        {t.discrepancy_qty}
+                      </td>
+                      <td className="p-4 text-right text-rose-600 font-bold">
+                        ₹{formatIndianNumber(t.discrepancy_amount)}
+                      </td>
+                      <td className="p-4 text-slate-500 whitespace-nowrap">
+                        {t.raised_by}
+                      </td>
+                      <td className="p-4 text-slate-500 whitespace-nowrap">
+                        {t.raised_date}
+                      </td>
+                      <td className="p-4 font-mono text-gray-400 whitespace-nowrap">
+                        {t.credit_note_no || "—"}
+                      </td>
+                      <td className="p-4 text-right text-emerald-600 font-bold whitespace-nowrap">
+                        {t.refund_received_amt
+                          ? `₹${formatIndianNumber(t.refund_received_amt)}`
+                          : "—"}
+                      </td>
+                      <td className="p-4 text-right pr-6 sticky right-0 bg-white group-hover:bg-[#f4f7fa] border-l border-gray-100 z-10">
+                        <button
+                          title="Update Ticket"
+                          onClick={() => {
+                            setSelectedTicket(t);
+                            setIsUpdateModalOpen(true);
+                          }}
+                          className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-200 text-gray-500 hover:text-[#e67e22] hover:bg-orange-50 hover:border-orange-200 shadow-sm flex items-center justify-center transition ml-auto"
+                        >
+                          <IconEdit />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
               )}
             </tbody>
           </table>
@@ -445,7 +501,6 @@ export default function RefundTicketManager() {
       {isModalOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in">
           <div className="bg-white rounded-2xl w-full max-w-3xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh] animate-in zoom-in-95">
-            {/* Modal Header */}
             <div className="px-8 py-5 border-b border-gray-100 flex justify-between items-center bg-white">
               <div>
                 <h3 className="text-[18px] font-bold text-slate-800 tracking-tight">
@@ -463,7 +518,6 @@ export default function RefundTicketManager() {
               </button>
             </div>
 
-            {/* Modal Body */}
             <div className="p-8 overflow-y-auto custom-scrollbar bg-[#f0f2f5]/40">
               <form
                 id="ticketForm"
@@ -566,8 +620,8 @@ export default function RefundTicketManager() {
                       required
                       value={formData.asin}
                       onChange={handleInputChange}
-                      className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#1677ff] focus:ring-4 focus:ring-blue-50 outline-none text-[13px] font-semibold text-slate-800 transition"
                       disabled={invoiceItems.length === 0}
+                      className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#1677ff] focus:ring-4 focus:ring-blue-50 outline-none text-[13px] font-semibold text-slate-800 transition"
                     >
                       <option value="">
                         {invoiceItems.length > 0
@@ -704,14 +758,13 @@ export default function RefundTicketManager() {
                       type="file"
                       accept="image/*"
                       onChange={handleFileChange}
-                      className="w-full bg-white border border-gray-200 p-2 rounded-xl text-[12px] text-slate-600 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-[#1677ff]/10 file:text-[#1677ff] hover:file:bg-[#1677ff]/20 transition"
+                      className="w-full bg-white border border-gray-200 p-2 rounded-xl text-[12px] text-slate-600 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-[#1677ff]/10 file:text-[#1677ff] hover:file:bg-[#1677ff]/20 transition cursor-pointer"
                     />
                   </div>
                 </div>
               </form>
             </div>
 
-            {/* Modal Footer */}
             <div className="flex justify-end gap-3 px-8 py-5 border-t border-gray-100 bg-gray-50/50 rounded-b-2xl">
               <button
                 type="button"
@@ -720,7 +773,6 @@ export default function RefundTicketManager() {
               >
                 Cancel
               </button>
-              {/* 🔥 ORANGE BUTTON 🔥 */}
               <button
                 type="submit"
                 form="ticketForm"
@@ -730,6 +782,127 @@ export default function RefundTicketManager() {
                 {loading ? "Submitting..." : "Raise Ticket"}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* 🚀 UPDATE TICKET MODAL 🚀 */}
+      {isUpdateModalOpen && selectedTicket && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95">
+            <div className="px-6 py-5 border-b border-gray-100 bg-white flex justify-between items-center">
+              <h3 className="font-bold text-slate-800 tracking-tight text-[16px]">
+                Update Ticket:{" "}
+                <span className="text-[#1677ff] font-mono">
+                  {selectedTicket.ticket_no}
+                </span>
+              </h3>
+              <button
+                onClick={() => setIsUpdateModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600 font-bold w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center transition"
+              >
+                &times;
+              </button>
+            </div>
+
+            <form
+              onSubmit={handleUpdateStatus}
+              className="p-6 grid gap-5 bg-[#f0f2f5]/40"
+            >
+              <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">
+                  Ticket Status <span className="text-rose-500">*</span>
+                </label>
+                <select
+                  value={selectedTicket.ticket_status}
+                  onChange={(e) =>
+                    setSelectedTicket({
+                      ...selectedTicket,
+                      ticket_status: e.target.value,
+                    })
+                  }
+                  className="w-full border border-gray-200 p-2.5 rounded-lg text-[13px] font-bold text-slate-700 outline-none focus:border-[#1677ff] focus:ring-4 focus:ring-blue-50 transition"
+                >
+                  <option value="Open">Open</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Closed - Resolved">
+                    Closed - Resolved (No Refund)
+                  </option>
+                  <option value="Closed - Discrepancy Confirmed">
+                    Closed - Discrepancy Confirmed (Triggers Refund)
+                  </option>
+                  <option value="Rejected">Rejected</option>
+                </select>
+              </div>
+
+              {(selectedTicket.ticket_status?.includes("Closed") ||
+                selectedTicket.ticket_status?.includes("Resolved")) && (
+                <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm space-y-4">
+                  <div>
+                    <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">
+                      Credit Note No.
+                    </label>
+                    <input
+                      type="text"
+                      value={selectedTicket.credit_note_no || ""}
+                      onChange={(e) =>
+                        setSelectedTicket({
+                          ...selectedTicket,
+                          credit_note_no: e.target.value,
+                        })
+                      }
+                      className="w-full border border-gray-200 p-2.5 rounded-lg text-[13px] font-mono text-[#1677ff] font-bold outline-none focus:border-[#1677ff] focus:ring-4 focus:ring-blue-50 transition"
+                      placeholder="e.g. CN-9982"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">
+                      Refund Received Amt (₹)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={selectedTicket.refund_received_amt || ""}
+                      onChange={(e) =>
+                        setSelectedTicket({
+                          ...selectedTicket,
+                          refund_received_amt: e.target.value,
+                        })
+                      }
+                      className="w-full border border-gray-200 p-2.5 rounded-lg text-[13px] font-bold text-emerald-600 outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-50 transition"
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">
+                  Update Remarks
+                </label>
+                <textarea
+                  value={selectedTicket.remark || ""}
+                  onChange={(e) =>
+                    setSelectedTicket({
+                      ...selectedTicket,
+                      remark: e.target.value,
+                    })
+                  }
+                  className="w-full border border-gray-200 p-3 rounded-lg text-[13px] min-h-[80px] outline-none focus:border-[#1677ff] focus:ring-4 focus:ring-blue-50 transition resize-none custom-scrollbar"
+                  placeholder="Add resolution notes here..."
+                ></textarea>
+              </div>
+
+              <div className="flex justify-end mt-2">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-6 py-3 bg-slate-800 hover:bg-slate-900 text-white font-bold tracking-widest uppercase rounded-xl text-[12px] w-full shadow-md transition disabled:opacity-50"
+                >
+                  {loading ? "Saving..." : "Save Status Changes"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

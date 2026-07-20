@@ -18,7 +18,11 @@ import ApprovalManager from "./pages/ApprovalManager";
 import GRPOManager from "./pages/GRPOManager";
 import RefundTicketManager from "./pages/RefundTicketManager";
 import RefundManager from "./pages/RefundManager";
-
+import PurchaseInwardManager from './pages/PurchaseInwardManager'; 
+import WarehouseAudit from "./pages/WarehouseAudit";
+import ImeiPdfManager from "./pages/ImeiPdfManager";
+import FinanceLedgerManager from "./pages/FinanceLedgerManager";
+import ReportsDashboard from "./pages/ReportsDashboard";
 // 🔥 FIX: SettingsProvider ko yahan import karna zaroori hai 🔥
 import { SettingsProvider } from "./context/SettingsContext";
 
@@ -48,6 +52,15 @@ function App() {
             <Route path="/grpo" element={<GRPOManager />} />
             <Route path="/issue-ticket" element={<RefundTicketManager />} />
             <Route path="/refund" element={<RefundManager />} />
+            <Route path="/warehouse-audit" element={<WarehouseAudit />} />
+            <Route path="/ImeiPdfManager" element={<ImeiPdfManager />} />
+            <Route path="/financeledger" element={<FinanceLedgerManager />} />
+            <Route path="/reports" element={<ReportsDashboard />} />
+
+            <Route
+              path="/purchase-inward"
+              element={<PurchaseInwardManager />}
+            />
           </Route>
         </Routes>
       </Router>

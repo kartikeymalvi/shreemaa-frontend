@@ -263,8 +263,8 @@ export default function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile Hamburger State
-  const [isCollapsed, setIsCollapsed] = useState(false); // 🔥 Desktop Collapse State 🔥
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const username = localStorage.getItem("username") || "User";
   const role = localStorage.getItem("user_role") || "USER";
@@ -282,7 +282,7 @@ export default function Layout() {
 
   const closeSidebar = () => setIsSidebarOpen(false);
 
-  // Application Routes
+  // 🔥 100% PRD ALIGNED ENTERPRISE MENU ITEMS 🔥
   const menuItems = [
     {
       group: "Main",
@@ -296,7 +296,7 @@ export default function Layout() {
       ],
     },
     {
-      group: "Modules",
+      group: "Core Modules",
       items: [
         {
           name: "Master",
@@ -305,25 +305,52 @@ export default function Layout() {
           requiresAdmin: true,
         },
         { name: "Approvals", path: "/approvals", icon: "fa-check-square" },
-        { name: "Orders Report", path: "/orders-report", icon: "fa-box-open" },
+        { name: "Orders", path: "/orders-report", icon: "fa-box-open" },
         {
-          name: "Invoice Shipment",
+          name: "Invoices",
           path: "/invoice-shipment",
           icon: "fa-file-invoice",
         },
-        { name: "Track ID", path: "/track-id", icon: "fa-location-crosshairs" },
-        {
-          name: "Warehouse Support",
-          path: "/warehouse-support",
-          icon: "fa-warehouse",
-        },
-        { name: "SAP-GRPO", path: "/grpo", icon: "fa-boxes" },
       ],
     },
     {
-      group: "Account Pages",
+      group: "Warehouse & Logistics",
       items: [
-        { name: "Refund", path: "/refund", icon: "fa-undo-alt" },
+        { name: "SAP-GRPO", path: "/grpo", icon: "fa-boxes" },
+        {
+          name: "Warehouse Audit",
+          path: "/warehouse-audit",
+          icon: "fa-clipboard-check",
+        },
+        {
+          name: "Purchase Inward",
+          path: "/purchase-inward",
+          icon: "fa-truck-loading",
+        },
+        {
+          name: "Track Shipment",
+          path: "/track-id",
+          icon: "fa-location-crosshairs",
+        },
+        { name: "IMEI's & PDF's", path: "/ImeiPdfManager", icon: "fa-barcode" },
+      ],
+    },
+    {
+      group: "Finance & Accounts",
+      items: [
+        { name: "Finance", path: "/financ", icon: "fa-wallet", exact: true },
+        {
+          name: "Accounts Ledgers",
+          path: "/financeledger",
+          icon: "fa-book",
+        },
+        { name: "Settlement", path: "/settlement", icon: "fa-handshake" },
+        { name: "Refunds", path: "/refund", icon: "fa-undo-alt" },
+      ],
+    },
+    {
+      group: "Support & Settings",
+      items: [
         {
           name: "Issue & Ticket",
           path: "/issue-ticket",
@@ -346,20 +373,18 @@ export default function Layout() {
       )}
 
       {/* --- SIDEBAR --- */}
-      {/* 🔥 Width ab dynamic hai: isCollapsed true hai to 88px, nahi to 250px 🔥 */}
       <aside
         className={`fixed lg:static inset-y-0 left-0 z-50 bg-[#fafafa] min-h-screen flex flex-col transform transition-all duration-300 ease-in-out 
         ${isSidebarOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full lg:translate-x-0"} 
-        ${isCollapsed ? "w-[88px]" : "w-[250px]"}`}
+        ${isCollapsed ? "w-[88px]" : "w-[240px]"}`}
       >
         {/* PREMIUM CLEAN LOGO */}
-        <div className="h-[80px] flex items-center px-6">
+        <div className="h-[70px] flex items-center px-5">
           <Link
             to="/dashboard"
             onClick={closeSidebar}
             className={`flex items-center ${isCollapsed ? "justify-center w-full" : "gap-3"} group transition-all duration-300`}
           >
-            {/* Custom SVG Logo */}
             <svg
               width="22"
               height="22"
@@ -381,9 +406,8 @@ export default function Layout() {
               />
             </svg>
 
-            {/* Text Hide Animation logic */}
             {!isCollapsed && (
-              <span className="text-[15px] font-bold text-slate-700 tracking-wide mt-0.5 whitespace-nowrap animate-in fade-in zoom-in duration-300">
+              <span className="text-[14px] font-bold text-slate-700 tracking-wide mt-0.5 whitespace-nowrap animate-in fade-in zoom-in duration-300">
                 SHRI MAA GROUP
               </span>
             )}
@@ -391,58 +415,56 @@ export default function Layout() {
         </div>
 
         {/* Subtle Divider */}
-        <div className="w-[85%] mx-auto h-[1px] bg-gradient-to-r from-transparent via-gray-200 to-transparent mb-4"></div>
+        <div className="w-[85%] mx-auto h-[1px] bg-gradient-to-r from-transparent via-gray-200 to-transparent mb-2"></div>
 
         {/* NAVIGATION LINKS */}
-        <nav className="flex-1 overflow-y-auto px-4 pb-8 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-          <div className="space-y-6">
+        <nav className="flex-1 overflow-y-auto px-3 pb-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <div className="space-y-3.5">
             {menuItems.map((group, idx) => (
               <div key={idx}>
-                {/* Group Title or Small Dash for collapsed state */}
                 {!isCollapsed ? (
-                  <p className="px-3 text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3 whitespace-nowrap fade-in duration-200">
+                  <p className="px-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5 whitespace-nowrap fade-in duration-200">
                     {group.group}
                   </p>
                 ) : (
-                  <div className="flex justify-center mb-3">
-                    <div className="w-4 h-[2px] bg-gray-200 rounded-full"></div>
+                  <div className="flex justify-center mb-1.5">
+                    <div className="w-3 h-[2px] bg-gray-200 rounded-full"></div>
                   </div>
                 )}
 
-                <div className="space-y-1">
+                <div className="space-y-0.5">
                   {group.items.map((item, itemIdx) => {
                     const active = isActive(item.path, item.exact);
 
-                    // Wrapper Style dynamically centering if collapsed
                     const wrapperClass = active
-                      ? `flex items-center ${isCollapsed ? "justify-center px-0" : "gap-3.5 px-3"} py-2.5 bg-white rounded-2xl shadow-[0_8px_20px_-6px_rgba(0,0,0,0.1)] transform -translate-y-[2px] transition-all duration-300 ease-[cubic-bezier(0.25,0.8,0.25,1)]`
-                      : `flex items-center ${isCollapsed ? "justify-center px-0" : "gap-3.5 px-3"} py-2.5 rounded-2xl hover:bg-white hover:shadow-[0_4px_12px_-4px_rgba(0,0,0,0.05)] transition-all duration-300 ease-[cubic-bezier(0.25,0.8,0.25,1)]`;
+                      ? `flex items-center ${isCollapsed ? "justify-center px-0" : "gap-3 px-2.5"} py-1.5 bg-white rounded-xl shadow-[0_4px_12px_-4px_rgba(0,0,0,0.1)] transform -translate-y-[1px] transition-all duration-300`
+                      : `flex items-center ${isCollapsed ? "justify-center px-0" : "gap-3 px-2.5"} py-1.5 rounded-xl hover:bg-white hover:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] transition-all duration-300`;
 
+                    // 🔥 ICON SIZE INCREASED TO 30px w/h AND FONT TO 15px 🔥
                     const iconBoxClass = active
-                      ? "w-[32px] h-[32px] rounded-[10px] bg-[#e67e22] text-white flex items-center justify-center shadow-[0_6px_14px_-4px_rgba(22,119,255,0.6)] shrink-0"
-                      : "w-[32px] h-[32px] rounded-[10px] bg-white text-gray-400 flex items-center justify-center shadow-[0_2px_8px_-2px_rgba(0,0,0,0.08)] border border-gray-100 group-hover:text-gray-600 shrink-0";
+                      ? "w-[30px] h-[30px] rounded-[8px] bg-[#e67e22] text-white flex items-center justify-center shadow-[0_4px_10px_-2px_rgba(230,126,34,0.5)] shrink-0"
+                      : "w-[30px] h-[30px] rounded-[8px] bg-white text-gray-400 flex items-center justify-center shadow-[0_1px_4px_-1px_rgba(0,0,0,0.08)] border border-gray-100 group-hover:text-[#e67e22] shrink-0";
 
                     const textClass = active
-                      ? "text-[14px] font-bold text-slate-800 whitespace-nowrap"
-                      : "text-[14px] font-medium text-gray-500 group-hover:text-gray-700 transition-colors whitespace-nowrap";
+                      ? "text-[12.5px] font-bold text-slate-800 whitespace-nowrap"
+                      : "text-[12.5px] font-medium text-gray-500 group-hover:text-slate-700 transition-colors whitespace-nowrap";
 
-                    // Admin Lock UI
                     if (item.requiresAdmin && role !== "ADMIN") {
                       return (
                         <button
                           key={itemIdx}
                           onClick={() => alert("🔒 Access Denied")}
                           title={isCollapsed ? "🔒 Access Denied" : ""}
-                          className={`w-full flex items-center ${isCollapsed ? "justify-center px-0" : "justify-between px-3"} py-2.5 rounded-[12px] opacity-60 cursor-not-allowed group transition-all`}
+                          className={`w-full flex items-center ${isCollapsed ? "justify-center px-0" : "justify-between px-2.5"} py-1.5 rounded-xl opacity-60 cursor-not-allowed group transition-all`}
                         >
                           <div
-                            className={`flex items-center ${isCollapsed ? "" : "gap-3.5"}`}
+                            className={`flex items-center ${isCollapsed ? "" : "gap-3"}`}
                           >
-                            <div className="w-[32px] h-[32px] shrink-0 rounded-[10px] bg-white text-gray-300 flex items-center justify-center shadow-[0_2px_8px_-2px_rgba(0,0,0,0.08)] border border-gray-100">
-                              <i className={`fas ${item.icon} text-[14px]`}></i>
+                            <div className="w-[30px] h-[30px] shrink-0 rounded-[8px] bg-white text-gray-300 flex items-center justify-center shadow-[0_1px_4px_-1px_rgba(0,0,0,0.08)] border border-gray-100">
+                              <i className={`fas ${item.icon} text-[15px]`}></i>
                             </div>
                             {!isCollapsed && (
-                              <span className="text-[14px] font-medium text-gray-400 whitespace-nowrap">
+                              <span className="text-[12.5px] font-medium text-gray-400 whitespace-nowrap">
                                 {item.name}
                               </span>
                             )}
@@ -461,11 +483,11 @@ export default function Layout() {
                           item.path === "/master" ? "/master/firms" : item.path
                         }
                         onClick={closeSidebar}
-                        title={isCollapsed ? item.name : ""} // 🔥 Tooltip on hover when collapsed
+                        title={isCollapsed ? item.name : ""}
                         className={`${wrapperClass} group`}
                       >
                         <div className={iconBoxClass}>
-                          <i className={`fas ${item.icon} text-[14px]`}></i>
+                          <i className={`fas ${item.icon} text-[15px]`}></i>
                         </div>
                         {!isCollapsed && (
                           <span className={textClass}>{item.name}</span>
@@ -483,20 +505,20 @@ export default function Layout() {
       {/* --- MAIN CONTENT AREA --- */}
       <div className="flex-1 flex flex-col overflow-hidden relative w-full transition-all duration-300">
         {/* HEADER */}
-        <header className="h-[80px] bg-transparent flex items-center justify-between px-4 lg:px-8 z-10 transition-all">
+        <header className="h-[70px] bg-transparent flex items-center justify-between px-4 lg:px-8 z-10 transition-all">
           <div className="flex items-center gap-4 w-full md:w-auto">
             {/* 🔥 MOBILE HAMBURGER MENU */}
             <button
               onClick={() => setIsSidebarOpen(true)}
-              className="lg:hidden w-10 h-10 flex items-center justify-center rounded-[12px] bg-white text-gray-500 shadow-[0_4px_12px_-4px_rgba(0,0,0,0.08)] hover:text-[#e67e22] transition-colors"
+              className="lg:hidden w-9 h-9 flex items-center justify-center rounded-[10px] bg-white text-gray-500 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.08)] hover:text-[#e67e22] transition-colors"
             >
-              <i className="fas fa-bars"></i>
+              <i className="fas fa-bars text-[14px]"></i>
             </button>
 
             {/* 🔥 DESKTOP SIDEBAR TOGGLE 🔥 */}
             <button
               onClick={() => setIsCollapsed(!isCollapsed)}
-              className="hidden lg:flex w-10 h-10 items-center justify-center rounded-[12px] bg-white text-gray-500 shadow-[0_4px_12px_-4px_rgba(0,0,0,0.08)] hover:text-[#1677ff] transition-colors"
+              className="hidden lg:flex w-9 h-9 items-center justify-center rounded-[10px] bg-white text-gray-500 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.08)] hover:text-[#1677ff] transition-colors"
               title="Toggle Sidebar"
             >
               <i
@@ -505,7 +527,7 @@ export default function Layout() {
             </button>
 
             {/* SEARCH BAR */}
-            <div className="hidden md:flex items-center bg-white px-4 py-2 rounded-full w-[250px] border border-gray-100 shadow-[0_4px_12px_-4px_rgba(0,0,0,0.05)] focus-within:border-blue-300 transition-all">
+            <div className="hidden md:flex items-center bg-white px-4 py-2 rounded-full w-[250px] border border-gray-100 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] focus-within:border-blue-300 transition-all">
               <i className="fas fa-search text-gray-400 text-sm"></i>
               <input
                 type="text"
@@ -516,9 +538,9 @@ export default function Layout() {
           </div>
 
           {/* RIGHT SIDE ICONS */}
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-4">
             <button className="text-gray-500 hover:text-slate-800 transition-colors flex items-center gap-2">
-              <i className="fas fa-user text-sm"></i>
+              <i className="fas fa-user text-[14px]"></i>
               <span className="text-[13.5px] font-bold hidden sm:inline">
                 {username}
               </span>
@@ -533,14 +555,14 @@ export default function Layout() {
 
             <button className="text-gray-500 hover:text-slate-800 transition-colors relative">
               <i className="fas fa-bell text-[16px]"></i>
-              <span className="absolute -top-1 -right-1.5 bg-[#ff4d4f] text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center border-2 border-[#fafafa]">
+              <span className="absolute -top-1 -right-1 bg-[#ff4d4f] text-white text-[8px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center border-2 border-[#fafafa]">
                 3
               </span>
             </button>
 
             <button
               onClick={handleLogout}
-              className="text-gray-400 hover:text-[#ff4d4f] transition-colors ml-2"
+              className="text-gray-400 hover:text-[#ff4d4f] transition-colors ml-1"
               title="Logout"
             >
               <i className="fas fa-sign-out-alt text-[16px]"></i>
