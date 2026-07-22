@@ -2663,7 +2663,22 @@ export default function OrdersReport() {
           showConfirmButton: false,
         });
       } else {
-        const payloads = itemsData.map((item) => ({ ...headerData, ...item }));
+        // Sirf unhi items ko lo jinka ASIN/FSN khali nahi hai
+        const validItems = itemsData.filter(
+          (item) => item.asin_fsn && item.asin_fsn.trim() !== "",
+        );
+
+        if (validItems.length === 0) {
+          Swal.fire(
+            "Error",
+            "Please add at least one valid product line item.",
+            "error",
+          );
+          setLoading(false);
+          return;
+        }
+
+        const payloads = validItems.map((item) => ({ ...headerData, ...item }));
         await Promise.all(
           payloads.map((payload) => api.post("reports/orders/", payload)),
         );
@@ -2683,7 +2698,7 @@ export default function OrdersReport() {
     } catch (error) {
       if (error.response && error.response.data) {
         if (error.response.data.error) Swal.fire(error.response.data.error);
-        else Swal.fire("Data validation failed. Please check inputs.");
+        else Swal.fire("Check Data validation . Please check inputs.");
       } else Swal.fire("Error saving record.");
     } finally {
       setLoading(false);

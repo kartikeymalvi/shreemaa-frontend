@@ -1,4 +1,8 @@
+
 import React from "react";
+import ReactDOM from "react-dom/client";
+
+import "./index.css";
 import {
   BrowserRouter as Router,
   Routes,
@@ -25,6 +29,9 @@ import FinanceLedgerManager from "./pages/FinanceLedgerManager";
 import ReportsDashboard from "./pages/ReportsDashboard";
 // 🔥 FIX: SettingsProvider ko yahan import karna zaroori hai 🔥
 import { SettingsProvider } from "./context/SettingsContext";
+import FinanceReconciliation from "./pages/FinanceReconciliation";
+import SettingsManager from "./pages/SettingsManager";
+import SettlementManager from "./pages/SettlementManager";
 
 function App() {
   return (
@@ -56,6 +63,9 @@ function App() {
             <Route path="/ImeiPdfManager" element={<ImeiPdfManager />} />
             <Route path="/financeledger" element={<FinanceLedgerManager />} />
             <Route path="/reports" element={<ReportsDashboard />} />
+            <Route path="/finance" element={<FinanceReconciliation />} />
+            <Route path="/settings" element={<SettingsManager />} />
+            <Route path="/settlement" element={<SettlementManager />} />
 
             <Route
               path="/purchase-inward"

@@ -255,8 +255,7 @@
 //     </div>
 //   );
 // }
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 
 export default function Layout() {
@@ -279,6 +278,14 @@ export default function Layout() {
       ? location.pathname === path
       : location.pathname.includes(path);
   };
+
+  // 🔥 Page load hote hi LocalStorage se theme utha kar HTML par apply karega
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("erp_theme") || "System";
+    const savedDensity = localStorage.getItem("erp_density") || "Comfortable";
+    document.documentElement.setAttribute("data-theme", savedTheme);
+    document.documentElement.setAttribute("data-density", savedDensity);
+  }, []);
 
   const closeSidebar = () => setIsSidebarOpen(false);
 
@@ -338,12 +345,8 @@ export default function Layout() {
     {
       group: "Finance & Accounts",
       items: [
-        { name: "Finance", path: "/financ", icon: "fa-wallet", exact: true },
-        {
-          name: "Accounts Ledgers",
-          path: "/financeledger",
-          icon: "fa-book",
-        },
+        { name: "Finance", path: "/finance", icon: "fa-wallet", exact: true },
+        { name: "Accounts Ledgers", path: "/financeledger", icon: "fa-book" },
         { name: "Settlement", path: "/settlement", icon: "fa-handshake" },
         { name: "Refunds", path: "/refund", icon: "fa-undo-alt" },
       ],
@@ -363,8 +366,8 @@ export default function Layout() {
   ];
 
   return (
-    <div className="flex h-screen bg-[#fafafa] font-sans text-slate-800 tracking-tight">
-      {/* --- MOBILE OVERLAY --- */}
+    // 🔥 UPDATE 1: bg-[#fafafa] ki jagah "main-bg" lagaya 🔥
+    <div className="flex h-screen main-bg font-sans text-slate-800 tracking-tight">
       {isSidebarOpen && (
         <div
           className="fixed inset-0 bg-slate-900/40 z-40 lg:hidden backdrop-blur-sm transition-opacity"
@@ -374,7 +377,8 @@ export default function Layout() {
 
       {/* --- SIDEBAR --- */}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-50 bg-[#fafafa] min-h-screen flex flex-col transform transition-all duration-300 ease-in-out 
+        // 🔥 UPDATE 2: bg-[#fafafa] ki jagah "main-bg" lagaya 🔥
+        className={`fixed lg:static inset-y-0 left-0 z-50 main-bg min-h-screen flex flex-col transform transition-all duration-300 ease-in-out 
         ${isSidebarOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full lg:translate-x-0"} 
         ${isCollapsed ? "w-[88px]" : "w-[240px]"}`}
       >
@@ -405,7 +409,6 @@ export default function Layout() {
                 fill="#e67e22"
               />
             </svg>
-
             {!isCollapsed && (
               <span className="text-[14px] font-bold text-slate-700 tracking-wide mt-0.5 whitespace-nowrap animate-in fade-in zoom-in duration-300">
                 SHRI MAA GROUP
@@ -414,7 +417,6 @@ export default function Layout() {
           </Link>
         </div>
 
-        {/* Subtle Divider */}
         <div className="w-[85%] mx-auto h-[1px] bg-gradient-to-r from-transparent via-gray-200 to-transparent mb-2"></div>
 
         {/* NAVIGATION LINKS */}
@@ -440,7 +442,6 @@ export default function Layout() {
                       ? `flex items-center ${isCollapsed ? "justify-center px-0" : "gap-3 px-2.5"} py-1.5 bg-white rounded-xl shadow-[0_4px_12px_-4px_rgba(0,0,0,0.1)] transform -translate-y-[1px] transition-all duration-300`
                       : `flex items-center ${isCollapsed ? "justify-center px-0" : "gap-3 px-2.5"} py-1.5 rounded-xl hover:bg-white hover:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] transition-all duration-300`;
 
-                    // 🔥 ICON SIZE INCREASED TO 30px w/h AND FONT TO 15px 🔥
                     const iconBoxClass = active
                       ? "w-[30px] h-[30px] rounded-[8px] bg-[#e67e22] text-white flex items-center justify-center shadow-[0_4px_10px_-2px_rgba(230,126,34,0.5)] shrink-0"
                       : "w-[30px] h-[30px] rounded-[8px] bg-white text-gray-400 flex items-center justify-center shadow-[0_1px_4px_-1px_rgba(0,0,0,0.08)] border border-gray-100 group-hover:text-[#e67e22] shrink-0";
@@ -507,15 +508,12 @@ export default function Layout() {
         {/* HEADER */}
         <header className="h-[70px] bg-transparent flex items-center justify-between px-4 lg:px-8 z-10 transition-all">
           <div className="flex items-center gap-4 w-full md:w-auto">
-            {/* 🔥 MOBILE HAMBURGER MENU */}
             <button
               onClick={() => setIsSidebarOpen(true)}
               className="lg:hidden w-9 h-9 flex items-center justify-center rounded-[10px] bg-white text-gray-500 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.08)] hover:text-[#e67e22] transition-colors"
             >
               <i className="fas fa-bars text-[14px]"></i>
             </button>
-
-            {/* 🔥 DESKTOP SIDEBAR TOGGLE 🔥 */}
             <button
               onClick={() => setIsCollapsed(!isCollapsed)}
               className="hidden lg:flex w-9 h-9 items-center justify-center rounded-[10px] bg-white text-gray-500 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.08)] hover:text-[#1677ff] transition-colors"
@@ -525,8 +523,6 @@ export default function Layout() {
                 className={`fas ${isCollapsed ? "fa-indent" : "fa-outdent"} text-[14px]`}
               ></i>
             </button>
-
-            {/* SEARCH BAR */}
             <div className="hidden md:flex items-center bg-white px-4 py-2 rounded-full w-[250px] border border-gray-100 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] focus-within:border-blue-300 transition-all">
               <i className="fas fa-search text-gray-400 text-sm"></i>
               <input
@@ -537,7 +533,6 @@ export default function Layout() {
             </div>
           </div>
 
-          {/* RIGHT SIDE ICONS */}
           <div className="flex items-center gap-4">
             <button className="text-gray-500 hover:text-slate-800 transition-colors flex items-center gap-2">
               <i className="fas fa-user text-[14px]"></i>
@@ -545,21 +540,18 @@ export default function Layout() {
                 {username}
               </span>
             </button>
-
             <Link
               to="/settings"
               className="text-gray-500 hover:text-slate-800 transition-colors"
             >
               <i className="fas fa-cog text-[16px]"></i>
             </Link>
-
             <button className="text-gray-500 hover:text-slate-800 transition-colors relative">
               <i className="fas fa-bell text-[16px]"></i>
               <span className="absolute -top-1 -right-1 bg-[#ff4d4f] text-white text-[8px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center border-2 border-[#fafafa]">
                 3
               </span>
             </button>
-
             <button
               onClick={handleLogout}
               className="text-gray-400 hover:text-[#ff4d4f] transition-colors ml-1"
@@ -570,7 +562,6 @@ export default function Layout() {
           </div>
         </header>
 
-        {/* CONTAINER CONTENT VIEW */}
         <main className="flex-1 overflow-y-auto px-4 lg:px-8 pb-8 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <Outlet />
         </main>

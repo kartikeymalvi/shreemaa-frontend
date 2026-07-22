@@ -1,5 +1,87 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
-body {
-  font-family: 'Inter', sans-serif;
+
+
+
+
+/* ========================================================== */
+/* 🎨 THE ULTIMATE DARK THEME & DENSITY ENGINE                */
+/* ========================================================== */
+
+/* -------------------------------------- */
+/* 1. COMPACT TABLE DENSITY               */
+/* -------------------------------------- */
+html[data-density="Compact"] table th,
+html[data-density="Compact"] table td,
+html[data-density="Compact"] .p-4,
+html[data-density="Compact"] .p-3 {
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+    font-size: 12px !important;
+}
+
+/* -------------------------------------- */
+/* 2. NUCLEAR DARK MODE (Forces all Tailwind colors to Dark) */
+/* -------------------------------------- */
+
+/* Main Body & Backgrounds */
+html[data-theme="Dark"] body,
+html[data-theme="Dark"] #root,
+html[data-theme="Dark"] .main-bg,
+html[data-theme="Dark"] .bg-\[\#fafafa\] {
+    background-color: #0f172a !important; /* Deep Slate */
+    color: #f8fafc !important;
+}
+
+/* Cards & White Containers */
+html[data-theme="Dark"] .bg-white {
+    background-color: #1e293b !important; 
+    border-color: #334155 !important;
+}
+
+/* Gray/Slate Backgrounds (Header, Sidebar, Tables) */
+html[data-theme="Dark"] .bg-gray-50,
+html[data-theme="Dark"] .bg-gray-100,
+html[data-theme="Dark"] .bg-slate-50,
+html[data-theme="Dark"] .bg-slate-100 {
+    background-color: #0f172a !important;
+    border-color: #334155 !important;
+}
+
+/* Text Colors - Convert Dark Text to White/Light Gray */
+html[data-theme="Dark"] .text-slate-800,
+html[data-theme="Dark"] .text-slate-700,
+html[data-theme="Dark"] .text-gray-800,
+html[data-theme="Dark"] .text-gray-700 {
+    color: #f8fafc !important;
+}
+
+html[data-theme="Dark"] .text-slate-600,
+html[data-theme="Dark"] .text-slate-500,
+html[data-theme="Dark"] .text-gray-600,
+html[data-theme="Dark"] .text-gray-500,
+html[data-theme="Dark"] .text-gray-400 {
+    color: #cbd5e1 !important;
+}
+
+/* Borders */
+html[data-theme="Dark"] .border-gray-50,
+html[data-theme="Dark"] .border-gray-100,
+html[data-theme="Dark"] .border-gray-200,
+html[data-theme="Dark"] .border-slate-100,
+html[data-theme="Dark"] .border-slate-200 {
+    border-color: #334155 !important;
+}
+
+/* Forms, Inputs, Select, Textareas */
+html[data-theme="Dark"] input,
+html[data-theme="Dark"] select,
+html[data-theme="Dark"] textarea {
+    background-color: #0f172a !important;
+    color: #f8fafc !important;
+    border-color: #475569 !important;
+}
+
+/* Table Row Hover */
+html[data-theme="Dark"] tr:hover > td {
+    background-color: #334155 !important;
 }
