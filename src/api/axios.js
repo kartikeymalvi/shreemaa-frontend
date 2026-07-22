@@ -50,8 +50,9 @@
 import axios from "axios";
 
 const api = axios.create({
-   //baseURL: "https://smg-erp.duckdns.org/api/",
-    baseURL: "http://localhost:8000/api/",
+   baseURL: "https://smg-erp.duckdns.org/api/",
+    
+   //baseURL: "http://localhost:8000/api/",
 });
 
 // REQUEST INTERCEPTOR
