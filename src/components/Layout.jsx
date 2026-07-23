@@ -312,6 +312,7 @@ export default function Layout() {
           requiresAdmin: true,
         },
         { name: "Approvals", path: "/approvals", icon: "fa-check-square" },
+       
         { name: "Orders", path: "/orders-report", icon: "fa-box-open" },
         {
           name: "Invoices",

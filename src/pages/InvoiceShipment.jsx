@@ -2450,12 +2450,24 @@ export default function InvoiceShipment() {
     role === "ADMIN" ? true : viewSettings[colName] !== false;
 
   const computeInwardStatus = (row) => {
+    // 1. Pehle Cancel check karega
     if (
       row.invoice_status?.toLowerCase() === "cancel" ||
       row.delivery_status?.toLowerCase() === "cancelled"
-    )
+    ) {
       return "Cancel";
-    if (row.grpo_qty > 0) return "Completed";
+    }
+
+    // 2. 🔥 NAYA LOGIC: Ab ye direct backend ki 'inward_status' field ko padhega 🔥
+    if (row.inward_status?.toLowerCase() === "done") {
+      return "Done"; // Ya aap chaho toh "Completed" bhi return karwa sakte ho
+    }
+
+    // 3. Purana fallback logic (just for safety)
+    if (row.grpo_qty > 0) {
+      return "Completed";
+    }
+
     return "Pending";
   };
 
@@ -3372,7 +3384,7 @@ export default function InvoiceShipment() {
                         </td>
                       )}
                       {showCol("show_cancel_reason") && (
-                        <td
+                        <td 
                           className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium max-w-[150px] truncate"
                           title={ship?.cancel_reason}
                         >
