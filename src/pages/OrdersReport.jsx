@@ -2171,10 +2171,10 @@
 //     </div>
 //   );
 // }
-
 import React, { useState, useEffect, useRef } from "react";
 import api from "../api/axios";
 import Swal from "sweetalert2";
+import SmartLoader from "../components/SmartLoader";
 
 // --- 🛠️ HELPER FUNCTIONS ---
 const formatDate = (dateStr) => {
@@ -2430,6 +2430,8 @@ export default function OrdersReport() {
 
   const fetchData = async () => {
     try {
+      setLoading(true);
+
       const queryParams = new URLSearchParams(
         Object.entries(filters).filter(([_, v]) => v !== ""),
       );
@@ -2453,6 +2455,8 @@ export default function OrdersReport() {
     } catch (error) {
       console.error("Fetch data error:", error);
       setOrders([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -2557,7 +2561,6 @@ export default function OrdersReport() {
     }
   };
 
-  // 🔥 PRD: BULK CANCEL CONFIRMATION 🔥
   const handleBulkCancel = async () => {
     if (selectedIds.length === 0) return Swal.fire("Select records first!");
     const confirm = await Swal.fire({
@@ -2663,7 +2666,6 @@ export default function OrdersReport() {
           showConfirmButton: false,
         });
       } else {
-        // Sirf unhi items ko lo jinka ASIN/FSN khali nahi hai
         const validItems = itemsData.filter(
           (item) => item.asin_fsn && item.asin_fsn.trim() !== "",
         );
@@ -2898,7 +2900,7 @@ export default function OrdersReport() {
         </div>
       </div>
 
-      {/* --- MAIN CARD WRAPPER (Now matches header width exactly) --- */}
+      {/* --- MAIN CARD WRAPPER --- */}
       <div className="bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden flex flex-col flex-1">
         {/* TOOLBAR */}
         <div className="flex flex-col md:flex-row justify-between items-center px-6 py-4 border-b border-gray-100 bg-white gap-4 flex-shrink-0">
@@ -2953,6 +2955,13 @@ export default function OrdersReport() {
               >
                 <IconTemplate />
               </button>
+              <input
+                type="file"
+                accept=".xlsx, .csv"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className="hidden"
+              />
               <button
                 onClick={() => setUploadModalOpen(true)}
                 title="Upload Bulk Excel"
@@ -3136,523 +3145,529 @@ export default function OrdersReport() {
           </div>
         )}
 
-        {/* 🔥 UNIFORM DATA TABLE (Standardized Fonts, Visible Scrollbars, Flex-1 restricts height to viewport) 🔥 */}
-        <div className="overflow-auto custom-table-scrollbar w-full flex-1 border-t border-gray-200 max-h-[calc(120vh-260px)]">
-          <table className="w-full text-left min-w-max border-collapse whitespace-nowrap">
-            <thead className="bg-gray-50 text-slate-600 text-[11px] font-bold uppercase tracking-wider sticky top-0 z-20 shadow-sm">
-              <tr>
-                {role === "ADMIN" && (
-                  <th className="px-4 py-3 text-center border border-gray-200 w-12 bg-gray-50">
-                    <input
-                      type="checkbox"
-                      onChange={handleSelectAll}
-                      checked={
-                        orders.length > 0 &&
-                        selectedIds.length === orders.length
-                      }
-                      className="w-4 h-4 rounded border-gray-300 text-[#e67e22] focus:ring-[#e67e22] cursor-pointer"
-                    />
-                  </th>
-                )}
-                <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
-                  #
-                </th>
-
-                {showCol("show_order_id") && (
-                  <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-                    Order ID
-                  </th>
-                )}
-                {showCol("show_txn_date") && (
-                  <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-                    Txn Date
-                  </th>
-                )}
-                {showCol("show_month") && (
-                  <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-                    Month
-                  </th>
-                )}
-                {showCol("show_day") && (
-                  <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-                    Day
-                  </th>
-                )}
-
-                {showCol("show_card_no") && (
-                  <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-                    Card No.
-                  </th>
-                )}
-                {showCol("show_placed_by") && (
-                  <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-                    Placed By
-                  </th>
-                )}
-                {showCol("show_txn_detail") && (
-                  <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-                    Txn Detail
-                  </th>
-                )}
-
-                {showCol("show_merchant") && (
-                  <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-                    Merchant
-                  </th>
-                )}
-                {showCol("show_merchant_id") && (
-                  <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-                    Merchant ID
-                  </th>
-                )}
-                {showCol("show_firm") && (
-                  <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-                    Firm
-                  </th>
-                )}
-                {showCol("show_location") && (
-                  <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-                    Location
-                  </th>
-                )}
-
-                {showCol("show_seller_info") && (
-                  <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-                    Seller name
-                  </th>
-                )}
-                {showCol("show_seller_info") && (
-                  <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-                    Seller GSTN
-                  </th>
-                )}
-                {showCol("show_asin_fsn") && (
-                  <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-                    ASIN/FSN
-                  </th>
-                )}
-                {showCol("show_model_name") && (
-                  <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-                    Model Name
-                  </th>
-                )}
-                {showCol("show_model_no") && (
-                  <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-                    Model No
-                  </th>
-                )}
-
-                {showCol("show_order_qty") && (
-                  <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
-                    Qty
-                  </th>
-                )}
-                {showCol("show_order_amount") && (
-                  <th className="px-4 py-3 text-right border border-gray-200 bg-gray-50">
-                    Order Amt
-                  </th>
-                )}
-                {showCol("show_unit_price") && (
-                  <th className="px-4 py-3 text-right border border-gray-200 bg-gray-50">
-                    Unit Price
-                  </th>
-                )}
-                {showCol("show_payment_amount") && (
-                  <th className="px-4 py-3 text-right border border-gray-200 bg-gray-50">
-                    Payment
-                  </th>
-                )}
-                {showCol("show_card_offer") && (
-                  <th className="px-4 py-3 text-right border border-gray-200 bg-gray-50">
-                    Card Offer
-                  </th>
-                )}
-
-                {showCol("show_delivered") && (
-                  <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
-                    Delivered Qty
-                  </th>
-                )}
-                {showCol("show_delivered") && (
-                  <th className="px-4 py-3 text-right border border-gray-200 bg-gray-50">
-                    Delivered Amt
-                  </th>
-                )}
-                {showCol("show_cancel_qty") && (
-                  <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
-                    Cancel Qty
-                  </th>
-                )}
-                {showCol("show_pending_qty") && (
-                  <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
-                    Pending Qty
-                  </th>
-                )}
-
-                {showCol("show_discrepancy") && (
-                  <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
-                    Discrepancy Qty
-                  </th>
-                )}
-                {showCol("show_discrepancy") && (
-                  <th className="px-4 py-3 text-right border border-gray-200 bg-gray-50">
-                    Discrepancy Amt
-                  </th>
-                )}
-                {showCol("show_refund") && (
-                  <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
-                    Refund Qty
-                  </th>
-                )}
-                {showCol("show_refund") && (
-                  <th className="px-4 py-3 text-right border border-gray-200 bg-gray-50">
-                    Refund Amt
-                  </th>
-                )}
-                {showCol("show_grpo") && (
-                  <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
-                    GRPO Qty
-                  </th>
-                )}
-                {showCol("show_grpo") && (
-                  <th className="px-4 py-3 text-right border border-gray-200 bg-gray-50">
-                    GRPO Amt
-                  </th>
-                )}
-
-                {showCol("show_order_status") && (
-                  <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
-                    Status
-                  </th>
-                )}
-                <th className="px-4 py-3 text-center bg-gray-50 border border-gray-200 z-30">
-                  Action
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white">
-              {orders.length === 0 ? (
+        {/* 🔥 UNIFORM DATA TABLE (High-Density & Flexible Text Wrap) 🔥 */}
+        <div className="overflow-auto custom-table-scrollbar w-full flex-1 border-t border-gray-200 min-h-[65vh] max-h-[calc(100vh-100px)] bg-white relative">
+          {loading ? (
+            <div className="w-full h-full flex flex-col items-center justify-center min-h-[50vh]">
+              <SmartLoader />
+            </div>
+          ) : (
+            <table className="w-full text-left min-w-max border-collapse">
+              <thead className="bg-gray-50 text-slate-600 text-[11px] font-bold uppercase tracking-wider sticky top-0 z-20 shadow-sm whitespace-nowrap">
                 <tr>
-                  <td
-                    colSpan="30"
-                    className="p-16 text-center border border-gray-200"
-                  >
-                    <div className="flex flex-col items-center justify-center">
-                      <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3 border border-gray-100">
-                        <i className="fas fa-inbox text-2xl text-gray-300"></i>
-                      </div>
-                      <p className="font-bold text-[13px] text-slate-600">
-                        No Orders Found
-                      </p>
-                      <p className="text-[12px] text-gray-400 mt-1">
-                        Try adjusting your search or filters.
-                      </p>
-                    </div>
-                  </td>
+                  {role === "ADMIN" && (
+                    <th className="px-3 py-2 text-center border border-gray-200 w-12 bg-gray-50">
+                      <input
+                        type="checkbox"
+                        onChange={handleSelectAll}
+                        checked={
+                          orders.length > 0 &&
+                          selectedIds.length === orders.length
+                        }
+                        className="w-4 h-4 rounded border-gray-300 text-[#e67e22] focus:ring-[#e67e22] cursor-pointer"
+                      />
+                    </th>
+                  )}
+                  <th className="px-3 py-2 text-center border border-gray-200 bg-gray-50">
+                    #
+                  </th>
+
+                  {showCol("show_order_id") && (
+                    <th className="px-3 py-2 border border-gray-200 bg-gray-50">
+                      Order ID
+                    </th>
+                  )}
+                  {showCol("show_txn_date") && (
+                    <th className="px-3 py-2 border border-gray-200 bg-gray-50">
+                      Txn Date
+                    </th>
+                  )}
+                  {showCol("show_month") && (
+                    <th className="px-3 py-2 border border-gray-200 bg-gray-50">
+                      Month
+                    </th>
+                  )}
+                  {showCol("show_day") && (
+                    <th className="px-3 py-2 border border-gray-200 bg-gray-50">
+                      Day
+                    </th>
+                  )}
+
+                  {showCol("show_card_no") && (
+                    <th className="px-3 py-2 border border-gray-200 bg-gray-50">
+                      Card No.
+                    </th>
+                  )}
+                  {showCol("show_placed_by") && (
+                    <th className="px-3 py-2 border border-gray-200 bg-gray-50">
+                      Placed By
+                    </th>
+                  )}
+                  {showCol("show_txn_detail") && (
+                    <th className="px-3 py-2 border border-gray-200 bg-gray-50">
+                      Txn Detail
+                    </th>
+                  )}
+
+                  {showCol("show_merchant") && (
+                    <th className="px-3 py-2 border border-gray-200 bg-gray-50">
+                      Merchant
+                    </th>
+                  )}
+                  {showCol("show_merchant_id") && (
+                    <th className="px-3 py-2 border border-gray-200 bg-gray-50">
+                      Merchant ID
+                    </th>
+                  )}
+                  {showCol("show_firm") && (
+                    <th className="px-3 py-2 border border-gray-200 bg-gray-50">
+                      Firm
+                    </th>
+                  )}
+                  {showCol("show_location") && (
+                    <th className="px-3 py-2 border border-gray-200 bg-gray-50">
+                      Location
+                    </th>
+                  )}
+
+                  {showCol("show_seller_info") && (
+                    <th className="px-3 py-2 border border-gray-200 bg-gray-50">
+                      Seller name
+                    </th>
+                  )}
+                  {showCol("show_seller_info") && (
+                    <th className="px-3 py-2 border border-gray-200 bg-gray-50">
+                      Seller GSTN
+                    </th>
+                  )}
+                  {showCol("show_asin_fsn") && (
+                    <th className="px-3 py-2 border border-gray-200 bg-gray-50">
+                      ASIN/FSN
+                    </th>
+                  )}
+                  {showCol("show_model_name") && (
+                    <th className="px-3 py-2 border border-gray-200 bg-gray-50">
+                      Model Name
+                    </th>
+                  )}
+                  {showCol("show_model_no") && (
+                    <th className="px-3 py-2 border border-gray-200 bg-gray-50">
+                      Model No
+                    </th>
+                  )}
+
+                  {showCol("show_order_qty") && (
+                    <th className="px-3 py-2 text-center border border-gray-200 bg-gray-50">
+                      Qty
+                    </th>
+                  )}
+                  {showCol("show_order_amount") && (
+                    <th className="px-3 py-2 text-right border border-gray-200 bg-gray-50">
+                      Order Amt
+                    </th>
+                  )}
+                  {showCol("show_unit_price") && (
+                    <th className="px-3 py-2 text-right border border-gray-200 bg-gray-50">
+                      Unit Price
+                    </th>
+                  )}
+                  {showCol("show_payment_amount") && (
+                    <th className="px-3 py-2 text-right border border-gray-200 bg-gray-50">
+                      Payment
+                    </th>
+                  )}
+                  {showCol("show_card_offer") && (
+                    <th className="px-3 py-2 text-right border border-gray-200 bg-gray-50">
+                      Card Offer
+                    </th>
+                  )}
+
+                  {showCol("show_delivered") && (
+                    <th className="px-3 py-2 text-center border border-gray-200 bg-gray-50">
+                      Delivered Qty
+                    </th>
+                  )}
+                  {showCol("show_delivered") && (
+                    <th className="px-3 py-2 text-right border border-gray-200 bg-gray-50">
+                      Delivered Amt
+                    </th>
+                  )}
+                  {showCol("show_cancel_qty") && (
+                    <th className="px-3 py-2 text-center border border-gray-200 bg-gray-50">
+                      Cancel Qty
+                    </th>
+                  )}
+                  {showCol("show_pending_qty") && (
+                    <th className="px-3 py-2 text-center border border-gray-200 bg-gray-50">
+                      Pending Qty
+                    </th>
+                  )}
+
+                  {showCol("show_discrepancy") && (
+                    <th className="px-3 py-2 text-center border border-gray-200 bg-gray-50">
+                      Discrepancy Qty
+                    </th>
+                  )}
+                  {showCol("show_discrepancy") && (
+                    <th className="px-3 py-2 text-right border border-gray-200 bg-gray-50">
+                      Discrepancy Amt
+                    </th>
+                  )}
+                  {showCol("show_refund") && (
+                    <th className="px-3 py-2 text-center border border-gray-200 bg-gray-50">
+                      Refund Qty
+                    </th>
+                  )}
+                  {showCol("show_refund") && (
+                    <th className="px-3 py-2 text-right border border-gray-200 bg-gray-50">
+                      Refund Amt
+                    </th>
+                  )}
+                  {showCol("show_grpo") && (
+                    <th className="px-3 py-2 text-center border border-gray-200 bg-gray-50">
+                      GRPO Qty
+                    </th>
+                  )}
+                  {showCol("show_grpo") && (
+                    <th className="px-3 py-2 text-right border border-gray-200 bg-gray-50">
+                      GRPO Amt
+                    </th>
+                  )}
+
+                  {showCol("show_order_status") && (
+                    <th className="px-3 py-2 text-center border border-gray-200 bg-gray-50">
+                      Status
+                    </th>
+                  )}
+                  <th className="px-3 py-2 text-center bg-gray-50 border border-gray-200 z-30">
+                    Action
+                  </th>
                 </tr>
-              ) : (
-                orders.map((order, index) => {
-                  if (!order) return null;
-                  const badgeStyle = getBadgeStyle(order?.order_status);
-
-                  return (
-                    <tr
-                      key={order?.id || index}
-                      className="hover:bg-blue-50/30 transition-colors group"
+              </thead>
+              <tbody className="bg-white">
+                {orders.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan="30"
+                      className="p-16 text-center border border-gray-200"
                     >
-                      {role === "ADMIN" && (
-                        <td className="px-4 py-3 text-center border border-gray-200">
-                          <input
-                            type="checkbox"
-                            checked={selectedIds.includes(order.id)}
-                            onChange={() => handleRowSelect(order.id)}
-                            className="w-4 h-4 rounded border-gray-300 text-[#e67e22] focus:ring-[#e67e22] cursor-pointer"
-                          />
-                        </td>
-                      )}
-                      {/* S.NO */}
-                      <td className="px-4 py-3 text-center border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                        {((currentPage - 1) * 50 + index + 1)
-                          .toString()
-                          .padStart(2, "0")}
-                      </td>
-
-                      {/* DATA CELLS WITH UNIFORM FONT: text-[13px] font-medium text-slate-700 */}
-                      {showCol("show_order_id") && (
-                        <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-800 font-bold">
-                          {order?.order_id || "-"}
-                        </td>
-                      )}
-                      {showCol("show_txn_date") && (
-                        <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                          {formatDate(order?.txn_date)}
-                        </td>
-                      )}
-                      {showCol("show_month") && (
-                        <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium capitalize">
-                          {order?.month || "-"}
-                        </td>
-                      )}
-                      {showCol("show_day") && (
-                        <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                          {order?.day || "-"}
-                        </td>
-                      )}
-
-                      {showCol("show_card_no") && (
-                        <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                          {order?.card_no || "-"}
-                        </td>
-                      )}
-                      {showCol("show_placed_by") && (
-                        <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                          {order?.placed_by || "-"}
-                        </td>
-                      )}
-                      {showCol("show_txn_detail") && (
-                        <td
-                          className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium"
-                          title={order?.txn_detail}
-                        >
-                          {order?.txn_detail || "-"}
-                        </td>
-                      )}
-
-                      {showCol("show_merchant") && (
-                        <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                          {order?.merchant || "-"}
-                        </td>
-                      )}
-                      {showCol("show_merchant_id") && (
-                        <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                          {order?.merchant_id || "-"}
-                        </td>
-                      )}
-                      {showCol("show_firm") && (
-                        <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                          {order?.firm || "-"}
-                        </td>
-                      )}
-                      {showCol("show_location") && (
-                        <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                          {order?.location || "-"}
-                        </td>
-                      )}
-
-                      {showCol("show_seller_info") && (
-                        <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                          {order?.seller_name || "-"}
-                        </td>
-                      )}
-                      {showCol("show_seller_info") && (
-                        <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                          {order?.seller_gstn || "-"}
-                        </td>
-                      )}
-
-                      {showCol("show_asin_fsn") && (
-                        <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                          {order?.asin_fsn || "-"}
-                        </td>
-                      )}
-                      {showCol("show_model_name") && (
-                        <td
-                          className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium"
-                          title={order?.model_name}
-                        >
-                          {order?.model_name || "-"}
-                        </td>
-                      )}
-                      {showCol("show_model_no") && (
-                        <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                          {order?.model_no || "-"}
-                        </td>
-                      )}
-
-                      {/* QUANTITIES (Centered) */}
-                      {showCol("show_order_qty") && (
-                        <td className="px-4 py-3 text-center border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                          {order?.order_qty || "0"}
-                        </td>
-                      )}
-
-                      {/* AMOUNTS (Right Aligned) */}
-                      {showCol("show_order_amount") && (
-                        <td className="px-4 py-3 text-right border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                          ₹
-                          {parseFloat(order?.order_amount || 0).toLocaleString(
-                            "en-IN",
-                          )}
-                        </td>
-                      )}
-                      {showCol("show_unit_price") && (
-                        <td className="px-4 py-3 text-right border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                          ₹
-                          {parseFloat(order?.unit_price || 0).toLocaleString(
-                            "en-IN",
-                          )}
-                        </td>
-                      )}
-                      {showCol("show_payment_amount") && (
-                        <td className="px-4 py-3 text-right border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                          ₹
-                          {parseFloat(
-                            order?.payment_amount || 0,
-                          ).toLocaleString("en-IN")}
-                        </td>
-                      )}
-                      {showCol("show_card_offer") && (
-                        <td className="px-4 py-3 text-right border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                          ₹
-                          {parseFloat(order?.card_offer || 0).toLocaleString(
-                            "en-IN",
-                          )}
-                        </td>
-                      )}
-
-                      {/* CALCULATED FIELDS */}
-                      {showCol("show_delivered") && (
-                        <td className="px-4 py-3 text-center border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                          {order?.delivered_qty || 0}
-                        </td>
-                      )}
-                      {showCol("show_delivered") && (
-                        <td className="px-4 py-3 text-right border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                          ₹{formatIndianNumber(order?.delivered_amount)}
-                        </td>
-                      )}
-
-                      {showCol("show_cancel_qty") && (
-                        <td className="px-4 py-3 text-center border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                          {order?.cancel_qty || 0}
-                        </td>
-                      )}
-                      {showCol("show_pending_qty") && (
-                        <td className="px-4 py-3 text-center border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                          {order?.pending_qty || 0}
-                        </td>
-                      )}
-
-                      {showCol("show_discrepancy") && (
-                        <td className="px-4 py-3 text-center border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                          {order?.discrepancy_qty || 0}
-                        </td>
-                      )}
-                      {showCol("show_discrepancy") && (
-                        <td className="px-4 py-3 text-right border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                          ₹{formatIndianNumber(order?.discrepancy_amount)}
-                        </td>
-                      )}
-
-                      {showCol("show_refund") && (
-                        <td className="px-4 py-3 text-center border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                          {order?.refund_qty || 0}
-                        </td>
-                      )}
-                      {showCol("show_refund") && (
-                        <td className="px-4 py-3 text-right border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                          ₹{formatIndianNumber(order?.pending_refund)}
-                        </td>
-                      )}
-
-                      {showCol("show_grpo") && (
-                        <td className="px-4 py-3 text-center border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                          {order?.grpo_qty || 0}
-                        </td>
-                      )}
-                      {showCol("show_grpo") && (
-                        <td className="px-4 py-3 text-right border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                          ₹{formatIndianNumber(order?.grpo_amount)}
-                        </td>
-                      )}
-
-                      {/* STATUS BADGE */}
-                      {showCol("show_order_status") && (
-                        <td className="px-4 py-3 text-center border border-gray-200 whitespace-nowrap">
-                          <span
-                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold tracking-widest uppercase border border-dashed ${badgeStyle.bg}`}
-                          >
-                            <span
-                              className={`w-1.5 h-1.5 rounded-full ${badgeStyle.dot}`}
-                            ></span>
-                            {order?.order_status || "Open"}
-                          </span>
-                        </td>
-                      )}
-
-                      {/* FIXED ALWAYS VISIBLE ACTION BUTTONS */}
-                      <td className="px-4 py-3 text-center border border-gray-200 bg-white z-10 whitespace-nowrap">
-                        <div className="flex items-center justify-center gap-2 transition-opacity">
-                          <button
-                            onClick={() => handleViewClick(order?.id)}
-                            title="View Summary"
-                            className="w-8 h-8 rounded-md bg-gray-50 border border-gray-200 text-gray-500 hover:text-[#722ed1] hover:bg-purple-50 hover:border-purple-200 shadow-sm flex items-center justify-center transition"
-                          >
-                            <i className="fas fa-eye text-[12px]"></i>
-                          </button>
-                          {role === "ADMIN" && (
-                            <>
-                              <button
-                                onClick={() => handleEditClick(order)}
-                                title="Edit Record"
-                                className="w-8 h-8 rounded-md bg-white border border-gray-200 text-gray-500 hover:text-[#e67e22] hover:border-blue-200 shadow-sm flex items-center justify-center transition"
-                              >
-                                <i className="fas fa-pen text-[12px]"></i>
-                              </button>
-                              <button
-                                onClick={() => handleDelete(order?.id)}
-                                title="Delete Record"
-                                className="w-8 h-8 rounded-md bg-white border border-gray-200 text-gray-500 hover:text-[#ff4d4f] hover:border-red-200 shadow-sm flex items-center justify-center transition"
-                              >
-                                <i className="fas fa-trash-alt text-[12px]"></i>
-                              </button>
-
-                              {/* 🔥 PRD: MARK CANCEL CONFIRMATION BUTTON 🔥 */}
-                              <button
-                                onClick={async () => {
-                                  const confirm = await Swal.fire({
-                                    title: "Mark Cancel Confirmation?",
-                                    text: "This will mark it Complete and move details to the Refund tab.",
-                                    icon: "warning",
-                                    showCancelButton: true,
-                                    confirmButtonColor: "#dc2626",
-                                    confirmButtonText: "Yes, Confirm Cancel",
-                                  });
-                                  if (confirm.isConfirmed) {
-                                    try {
-                                      await api.post(
-                                        `reports/orders/${order.id}/cancel/`,
-                                      );
-                                      Swal.fire(
-                                        "Cancelled",
-                                        "Order details moved to Refunds",
-                                        "success",
-                                      );
-                                      fetchData();
-                                    } catch (e) {
-                                      Swal.fire(
-                                        "Error",
-                                        "Could not cancel order",
-                                        "error",
-                                      );
-                                    }
-                                  }
-                                }}
-                                title="Mark Cancel Confirmation (Move to Refund)"
-                                className="w-8 h-8 rounded-lg bg-white border border-gray-200 text-gray-500 hover:text-amber-500 hover:bg-amber-50 shadow-sm flex items-center justify-center transition"
-                              >
-                                <i className="fas fa-ban text-[12px]"></i>
-                              </button>
-                            </>
-                          )}
+                      <div className="flex flex-col items-center justify-center">
+                        <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3 border border-gray-100">
+                          <i className="fas fa-inbox text-2xl text-gray-300"></i>
                         </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                        <p className="font-bold text-[13px] text-slate-600">
+                          No Orders Found
+                        </p>
+                        <p className="text-[12px] text-gray-400 mt-1">
+                          Try adjusting your search or filters.
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  orders.map((order, index) => {
+                    if (!order) return null;
+                    const badgeStyle = getBadgeStyle(order?.order_status);
+
+                    return (
+                      <tr
+                        key={order?.id || index}
+                        className="hover:bg-blue-50/40 transition-colors group"
+                      >
+                        {role === "ADMIN" && (
+                          <td className="px-3 py-1.5 text-center border border-gray-200">
+                            <input
+                              type="checkbox"
+                              checked={selectedIds.includes(order.id)}
+                              onChange={() => handleRowSelect(order.id)}
+                              className="w-4 h-4 rounded border-gray-300 text-[#e67e22] focus:ring-[#e67e22] cursor-pointer"
+                            />
+                          </td>
+                        )}
+                        {/* S.NO */}
+                        <td className="px-3 py-1.5 text-center border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+                          {((currentPage - 1) * 50 + index + 1)
+                            .toString()
+                            .padStart(2, "0")}
+                        </td>
+
+                        {/* DATA CELLS - Dynamic Wrap Support */}
+                        {showCol("show_order_id") && (
+                          <td className="px-3 py-1.5 border border-gray-200 whitespace-nowrap text-[13px] text-slate-800 font-bold">
+                            {order?.order_id || "-"}
+                          </td>
+                        )}
+                        {showCol("show_txn_date") && (
+                          <td className="px-3 py-1.5 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+                            {formatDate(order?.txn_date)}
+                          </td>
+                        )}
+                        {showCol("show_month") && (
+                          <td className="px-3 py-1.5 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium capitalize">
+                            {order?.month || "-"}
+                          </td>
+                        )}
+                        {showCol("show_day") && (
+                          <td className="px-3 py-1.5 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+                            {order?.day || "-"}
+                          </td>
+                        )}
+
+                        {showCol("show_card_no") && (
+                          <td className="px-3 py-1.5 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+                            {order?.card_no || "-"}
+                          </td>
+                        )}
+                        {showCol("show_placed_by") && (
+                          <td className="px-3 py-1.5 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+                            {order?.placed_by || "-"}
+                          </td>
+                        )}
+                        {showCol("show_txn_detail") && (
+                          <td
+                            className="px-3 py-1.5 border border-gray-200 whitespace-normal min-w-[150px] max-w-[250px] break-words leading-snug text-[13px] text-slate-700 font-medium"
+                            title={order?.txn_detail}
+                          >
+                            {order?.txn_detail || "-"}
+                          </td>
+                        )}
+
+                        {showCol("show_merchant") && (
+                          <td className="px-3 py-1.5 border border-gray-200 whitespace-normal min-w-[120px] max-w-[200px] break-words leading-tight text-[13px] text-slate-700 font-medium">
+                            {order?.merchant || "-"}
+                          </td>
+                        )}
+                        {showCol("show_merchant_id") && (
+                          <td className="px-3 py-1.5 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+                            {order?.merchant_id || "-"}
+                          </td>
+                        )}
+                        {showCol("show_firm") && (
+                          <td className="px-3 py-1.5 border border-gray-200 whitespace-normal min-w-[120px] max-w-[200px] break-words leading-tight text-[13px] text-slate-700 font-medium">
+                            {order?.firm || "-"}
+                          </td>
+                        )}
+                        {showCol("show_location") && (
+                          <td className="px-3 py-1.5 border border-gray-200 whitespace-normal min-w-[100px] max-w-[150px] break-words leading-tight text-[13px] text-slate-700 font-medium">
+                            {order?.location || "-"}
+                          </td>
+                        )}
+
+                        {showCol("show_seller_info") && (
+                          <td className="px-3 py-1.5 border border-gray-200 whitespace-normal min-w-[120px] max-w-[200px] break-words leading-tight text-[13px] text-slate-700 font-medium">
+                            {order?.seller_name || "-"}
+                          </td>
+                        )}
+                        {showCol("show_seller_info") && (
+                          <td className="px-3 py-1.5 border border-gray-200 whitespace-nowrap text-[13px] text-slate-500 font-mono tracking-wider">
+                            {order?.seller_gstn || "-"}
+                          </td>
+                        )}
+
+                        {showCol("show_asin_fsn") && (
+                          <td className="px-3 py-1.5 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-bold font-mono">
+                            {order?.asin_fsn || "-"}
+                          </td>
+                        )}
+                        {showCol("show_model_name") && (
+                          <td
+                            className="px-3 py-1.5 border border-gray-200 whitespace-normal min-w-[150px] max-w-[250px] break-words leading-snug text-[13px] text-slate-700 font-medium"
+                            title={order?.model_name}
+                          >
+                            {order?.model_name || "-"}
+                          </td>
+                        )}
+                        {showCol("show_model_no") && (
+                          <td className="px-3 py-1.5 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+                            {order?.model_no || "-"}
+                          </td>
+                        )}
+
+                        {/* QUANTITIES (Centered) */}
+                        {showCol("show_order_qty") && (
+                          <td className="px-3 py-1.5 text-center border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+                            {order?.order_qty || "0"}
+                          </td>
+                        )}
+
+                        {/* AMOUNTS (Right Aligned) */}
+                        {showCol("show_order_amount") && (
+                          <td className="px-3 py-1.5 text-right border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+                            ₹
+                            {parseFloat(
+                              order?.order_amount || 0,
+                            ).toLocaleString("en-IN")}
+                          </td>
+                        )}
+                        {showCol("show_unit_price") && (
+                          <td className="px-3 py-1.5 text-right border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+                            ₹
+                            {parseFloat(order?.unit_price || 0).toLocaleString(
+                              "en-IN",
+                            )}
+                          </td>
+                        )}
+                        {showCol("show_payment_amount") && (
+                          <td className="px-3 py-1.5 text-right border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+                            ₹
+                            {parseFloat(
+                              order?.payment_amount || 0,
+                            ).toLocaleString("en-IN")}
+                          </td>
+                        )}
+                        {showCol("show_card_offer") && (
+                          <td className="px-3 py-1.5 text-right border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+                            ₹
+                            {parseFloat(order?.card_offer || 0).toLocaleString(
+                              "en-IN",
+                            )}
+                          </td>
+                        )}
+
+                        {/* CALCULATED FIELDS */}
+                        {showCol("show_delivered") && (
+                          <td className="px-3 py-1.5 text-center border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+                            {order?.delivered_qty || 0}
+                          </td>
+                        )}
+                        {showCol("show_delivered") && (
+                          <td className="px-3 py-1.5 text-right border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+                            ₹{formatIndianNumber(order?.delivered_amount)}
+                          </td>
+                        )}
+
+                        {showCol("show_cancel_qty") && (
+                          <td className="px-3 py-1.5 text-center border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+                            {order?.cancel_qty || 0}
+                          </td>
+                        )}
+                        {showCol("show_pending_qty") && (
+                          <td className="px-3 py-1.5 text-center border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+                            {order?.pending_qty || 0}
+                          </td>
+                        )}
+
+                        {showCol("show_discrepancy") && (
+                          <td className="px-3 py-1.5 text-center border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+                            {order?.discrepancy_qty || 0}
+                          </td>
+                        )}
+                        {showCol("show_discrepancy") && (
+                          <td className="px-3 py-1.5 text-right border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+                            ₹{formatIndianNumber(order?.discrepancy_amount)}
+                          </td>
+                        )}
+
+                        {showCol("show_refund") && (
+                          <td className="px-3 py-1.5 text-center border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+                            {order?.refund_qty || 0}
+                          </td>
+                        )}
+                        {showCol("show_refund") && (
+                          <td className="px-3 py-1.5 text-right border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+                            ₹{formatIndianNumber(order?.pending_refund)}
+                          </td>
+                        )}
+
+                        {showCol("show_grpo") && (
+                          <td className="px-3 py-1.5 text-center border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+                            {order?.grpo_qty || 0}
+                          </td>
+                        )}
+                        {showCol("show_grpo") && (
+                          <td className="px-3 py-1.5 text-right border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+                            ₹{formatIndianNumber(order?.grpo_amount)}
+                          </td>
+                        )}
+
+                        {/* STATUS BADGE */}
+                        {showCol("show_order_status") && (
+                          <td className="px-3 py-1.5 text-center border border-gray-200 whitespace-nowrap">
+                            <span
+                              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold tracking-widest uppercase border border-dashed ${badgeStyle.bg}`}
+                            >
+                              <span
+                                className={`w-1.5 h-1.5 rounded-full ${badgeStyle.dot}`}
+                              ></span>
+                              {order?.order_status || "Open"}
+                            </span>
+                          </td>
+                        )}
+
+                        {/* FIXED ALWAYS VISIBLE ACTION BUTTONS */}
+                        <td className="px-3 py-1.5 text-center border border-gray-200 bg-white z-10 whitespace-nowrap">
+                          <div className="flex items-center justify-center gap-1.5 transition-opacity">
+                            <button
+                              onClick={() => handleViewClick(order?.id)}
+                              title="View Summary"
+                              className="w-7 h-7 rounded-md bg-gray-50 border border-gray-200 text-gray-500 hover:text-[#722ed1] hover:bg-purple-50 hover:border-purple-200 shadow-sm flex items-center justify-center transition"
+                            >
+                              <i className="fas fa-eye text-[11px]"></i>
+                            </button>
+                            {role === "ADMIN" && (
+                              <>
+                                <button
+                                  onClick={() => handleEditClick(order)}
+                                  title="Edit Record"
+                                  className="w-7 h-7 rounded-md bg-white border border-gray-200 text-gray-500 hover:text-[#e67e22] hover:border-blue-200 shadow-sm flex items-center justify-center transition"
+                                >
+                                  <i className="fas fa-pen text-[11px]"></i>
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(order?.id)}
+                                  title="Delete Record"
+                                  className="w-7 h-7 rounded-md bg-white border border-gray-200 text-gray-500 hover:text-[#ff4d4f] hover:border-red-200 shadow-sm flex items-center justify-center transition"
+                                >
+                                  <i className="fas fa-trash-alt text-[11px]"></i>
+                                </button>
+
+                                {/* 🔥 PRD: MARK CANCEL CONFIRMATION BUTTON 🔥 */}
+                                <button
+                                  onClick={async () => {
+                                    const confirm = await Swal.fire({
+                                      title: "Mark Cancel Confirmation?",
+                                      text: "This will mark it Complete and move details to the Refund tab.",
+                                      icon: "warning",
+                                      showCancelButton: true,
+                                      confirmButtonColor: "#dc2626",
+                                      confirmButtonText: "Yes, Confirm Cancel",
+                                    });
+                                    if (confirm.isConfirmed) {
+                                      try {
+                                        await api.post(
+                                          `reports/orders/${order.id}/cancel/`,
+                                        );
+                                        Swal.fire(
+                                          "Cancelled",
+                                          "Order details moved to Refunds",
+                                          "success",
+                                        );
+                                        fetchData();
+                                      } catch (e) {
+                                        Swal.fire(
+                                          "Error",
+                                          "Could not cancel order",
+                                          "error",
+                                        );
+                                      }
+                                    }
+                                  }}
+                                  title="Mark Cancel Confirmation (Move to Refund)"
+                                  className="w-7 h-7 rounded-lg bg-white border border-gray-200 text-gray-500 hover:text-amber-500 hover:bg-amber-50 shadow-sm flex items-center justify-center transition"
+                                >
+                                  <i className="fas fa-ban text-[11px]"></i>
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
 
         {/* PAGINATION FOOTER */}
@@ -4208,7 +4223,11 @@ export default function OrdersReport() {
                 disabled={loading}
                 className="px-8 py-2.5 bg-[#e67e22] hover:bg-blue-600 text-white font-bold uppercase tracking-widest text-[12px] rounded-xl shadow-md shadow-blue-500/20 transition disabled:opacity-50"
               >
-                {loading ? "Saving..." : "Save Record"}
+                {loading
+                  ? "Processing..."
+                  : editMode
+                    ? "Update Record"
+                    : "Save Invoice Record"}
               </button>
             </div>
           </div>

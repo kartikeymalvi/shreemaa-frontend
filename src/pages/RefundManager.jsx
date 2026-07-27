@@ -113,11 +113,12 @@
 //     const s = String(status || "")
 //       .trim()
 //       .toLowerCase();
-//     if (s === "completed")
+//     if (s === "completed") {
 //       return {
 //         bg: "bg-emerald-50 text-emerald-700 border-emerald-300",
 //         dot: "bg-emerald-600",
 //       };
+//     }
 //     return {
 //       bg: "bg-amber-50 text-amber-700 border-amber-300",
 //       dot: "bg-amber-600",
@@ -125,9 +126,17 @@
 //   };
 
 //   return (
-//     <div className="bg-[#fafafa] min-h-screen font-sans pb-10 text-slate-700">
+//     <div className="bg-transparent font-sans h-full flex flex-col pb-4 text-slate-700">
+//       {/* --- CUSTOM SCROLLBAR STYLE FOR TABLE --- */}
+//       <style>{`
+//         .custom-table-scrollbar::-webkit-scrollbar { height: 10px; width: 10px; }
+//         .custom-table-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+//         .custom-table-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 5px; }
+//         .custom-table-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+//       `}</style>
+
 //       {/* HEADER */}
-//       <div className="bg-white px-6 py-4 border-b border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4">
+//       <div className="bg-white px-6 py-4 border border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4 rounded-t-xl mb-4">
 //         <div>
 //           <p className="text-[12px] text-gray-400 font-medium mb-1 tracking-wide">
 //             Account Pages / <span className="text-slate-600">Refund</span>
@@ -139,15 +148,15 @@
 //       </div>
 
 //       {/* --- MAIN CARD WRAPPER --- */}
-//       <div className="mx-6 mt-6 bg-white rounded-[16px] shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-gray-100 overflow-hidden flex flex-col">
+//       <div className="bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden flex flex-col flex-1">
 //         {/* TOOLBAR */}
-//         <div className="flex flex-col md:flex-row justify-between items-center px-6 py-4 border-b border-gray-100 bg-white gap-4">
+//         <div className="flex flex-col md:flex-row justify-between items-center px-6 py-4 border-b border-gray-100 bg-white gap-4 flex-shrink-0">
 //           <div className="flex items-center gap-3 w-full md:w-auto">
-//             <div className="flex items-center bg-gray-50/80 px-4 py-2.5 rounded-full w-full md:w-[320px] border border-gray-100 focus-within:bg-white focus-within:border-blue-300 focus-within:ring-4 focus-within:ring-blue-50 transition-all">
+//             <div className="flex items-center bg-gray-50/80 px-4 py-2.5 rounded-full w-full md:w-[320px] border border-gray-100 focus-within:bg-white focus-within:border-[#e67e22] focus-within:ring-2 focus-within:ring-blue-50 transition-all">
 //               <IconSearch />
 //               <input
 //                 type="text"
-//                 placeholder="Search refunds..."
+//                 placeholder="Search refunds, order id, invoice..."
 //                 value={globalSearch}
 //                 onChange={(e) => setGlobalSearch(e.target.value)}
 //                 className="bg-transparent border-none outline-none ml-3 text-[13px] w-full font-medium text-slate-700 placeholder-gray-400"
@@ -168,47 +177,78 @@
 //           </div>
 //         </div>
 
-//         {/* FULL DATA TABLE (Premium Theme) */}
-//         <div className="overflow-x-auto w-full [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] min-h-[50vh] max-h-[65vh]">
+//         {/* 🔥 UNIFORM DATA TABLE (Premium Enterprise Theme) 🔥 */}
+//         <div className="overflow-auto custom-table-scrollbar w-full flex-1 border-t border-gray-200 min-h-[60vh] max-h-[calc(100vh-180px)]">
 //           <table className="w-full text-left min-w-max border-collapse whitespace-nowrap">
-//             <thead className="bg-gray-50/50 text-slate-500 text-[11px] font-bold uppercase tracking-widest sticky top-0 z-20 backdrop-blur-md shadow-sm">
+//             <thead className="bg-gray-50 text-slate-600 text-[11px] font-bold uppercase tracking-wider sticky top-0 z-20 shadow-sm">
 //               <tr>
-//                 <th className="px-4 py-3 text-center bg-gray-50">#</th>
-//                 <th className="px-4 py-3 bg-gray-50">Source Date</th>
-//                 <th className="px-4 py-3 bg-gray-50">Firm</th>
-//                 <th className="px-4 py-3 bg-gray-50">Merchant</th>
-//                 <th className="px-4 py-3 bg-gray-50">Order ID</th>
-//                 <th className="px-4 py-3 bg-gray-50">Invoice No</th>
-//                 <th className="px-4 py-3 bg-gray-50">Model Name</th>
-//                 <th className="px-4 py-3 text-right bg-gray-50">Invoice Amt</th>
-//                 <th className="px-4 py-3 bg-gray-50 text-[#e67e22]">
+//                 <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
+//                   #
+//                 </th>
+//                 <th className="px-4 py-3 border border-gray-200 bg-gray-50">
+//                   Source Date
+//                 </th>
+//                 <th className="px-4 py-3 border border-gray-200 bg-gray-50">
+//                   Firm
+//                 </th>
+//                 <th className="px-4 py-3 border border-gray-200 bg-gray-50">
+//                   Merchant
+//                 </th>
+//                 <th className="px-4 py-3 border border-gray-200 bg-gray-50">
+//                   Order ID
+//                 </th>
+//                 <th className="px-4 py-3 border border-gray-200 bg-gray-50">
+//                   Invoice No
+//                 </th>
+
+//                 {/* Fixed Model Name Header */}
+//                 <th className="px-4 py-3 border border-gray-200 bg-gray-50 min-w-[250px]">
+//                   Model Name
+//                 </th>
+
+//                 {/* 🔥 NEW QUANTITY COLUMN 🔥 */}
+//                 <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
+//                   Refund Qty
+//                 </th>
+
+//                 <th className="px-4 py-3 text-right border border-gray-200 bg-gray-50">
+//                   Refund Amt
+//                 </th>
+//                 <th className="px-4 py-3 border border-gray-200 bg-gray-50 text-[#e67e22]">
 //                   Refund Type
 //                 </th>
-//                 <th className="px-4 py-3 bg-gray-50 text-[#e67e22] text-center">
+//                 <th className="px-4 py-3 border border-gray-200 bg-gray-50 text-[#e67e22] text-center">
 //                   Status
 //                 </th>
-//                 <th className="px-4 py-3 bg-gray-50 text-[#e67e22]">
+//                 <th className="px-4 py-3 border border-gray-200 bg-gray-50 text-[#e67e22]">
 //                   Recv Date
 //                 </th>
-//                 <th className="px-4 py-3 bg-gray-50 text-[#e67e22]">
+//                 <th className="px-4 py-3 border border-gray-200 bg-gray-50 text-[#e67e22]">
 //                   Txn Type
 //                 </th>
-//                 <th className="px-4 py-3 bg-gray-50 text-[#e67e22]">Card No</th>
-//                 <th className="px-4 py-3 bg-gray-50 text-[#e67e22]">Comment</th>
-//                 <th className="px-4 py-3 text-center bg-gray-50 z-30">
+//                 <th className="px-4 py-3 border border-gray-200 bg-gray-50 text-[#e67e22]">
+//                   Card No
+//                 </th>
+//                 <th className="px-4 py-3 border border-gray-200 bg-gray-50 text-[#e67e22]">
+//                   Comment
+//                 </th>
+//                 <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50 z-30">
 //                   Action
 //                 </th>
 //               </tr>
 //             </thead>
-//             <tbody className="text-[13px] font-medium text-slate-700 bg-white">
+//             <tbody className="bg-white">
 //               {refunds.length === 0 ? (
 //                 <tr>
-//                   <td colSpan="15" className="p-16 text-center">
+//                   <td
+//                     colSpan="16"
+//                     className="p-16 text-center border border-gray-200"
+//                   >
 //                     <div className="flex flex-col items-center justify-center">
 //                       <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3 border border-gray-100">
 //                         <i className="fas fa-inbox text-2xl text-gray-300"></i>
 //                       </div>
-//                       <p className="font-bold text-slate-600">
+//                       <p className="font-bold text-[13px] text-slate-600">
 //                         No Refunds Found
 //                       </p>
 //                     </div>
@@ -220,43 +260,49 @@
 //                   return (
 //                     <tr
 //                       key={r.id}
-//                       className="hover:bg-blue-50/20 transition-colors group border-b border-gray-50"
+//                       className="hover:bg-blue-50/30 transition-colors group"
 //                     >
-//                       <td className="px-4 py-3 text-center text-gray-400 font-medium text-xs">
+//                       <td className="px-4 py-3 text-center border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
 //                         {(index + 1).toString().padStart(2, "0")}
 //                       </td>
-//                       <td className="px-4 py-3 text-slate-600">
+
+//                       <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
 //                         {r.source_date || "-"}
 //                       </td>
-//                       <td className="px-4 py-3 font-semibold text-slate-700">
+//                       <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-bold">
 //                         {r.firm || "-"}
 //                       </td>
-//                       <td className="px-4 py-3 font-semibold text-slate-700">
+//                       <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-bold">
 //                         {r.merchant || "-"}
 //                       </td>
-//                       <td className="px-4 py-3 font-mono font-bold text-[#e67e22] tracking-wide">
+//                       <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-[#e67e22] font-bold font-mono">
 //                         {r.order_id || "-"}
 //                       </td>
-//                       <td className="px-4 py-3 font-bold text-slate-800">
+//                       <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-800 font-bold">
 //                         {r.invoice_no || "-"}
 //                       </td>
-//                       <td
-//                         className="px-4 py-3 text-slate-700 max-w-[150px] truncate"
-//                         title={r.model_name}
-//                       >
+
+//                       {/* 🔥 MODEL NAME FIX: REMOVED TRUNCATE, ADDED WHITESPACE-NORMAL & MIN-WIDTH 🔥 */}
+//                       <td className="px-4 py-3 border border-gray-200 text-[13px] text-slate-700 font-medium whitespace-normal min-w-[250px] leading-relaxed">
 //                         {r.model_name || "-"}
 //                       </td>
-//                       <td className="px-4 py-3 text-right font-bold text-rose-500">
+
+//                       {/* 🔥 NEW REFUND QTY COLUMN 🔥 */}
+//                       <td className="px-4 py-3 text-center border border-gray-200 whitespace-nowrap text-[13px] text-slate-800 font-bold">
+//                         {r.refund_qty || r.invoice_qty || "0"}
+//                       </td>
+
+//                       <td className="px-4 py-3 text-right border border-gray-200 whitespace-nowrap text-[13px] font-bold text-rose-500">
 //                         ₹
 //                         {parseFloat(r.invoice_amount || 0).toLocaleString(
 //                           "en-IN",
 //                         )}
 //                       </td>
-//                       <td className="px-4 py-3 font-semibold text-slate-700">
+//                       <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
 //                         {r.refund_type || "-"}
 //                       </td>
 
-//                       <td className="px-4 py-3 text-center">
+//                       <td className="px-4 py-3 text-center border border-gray-200 whitespace-nowrap">
 //                         <span
 //                           className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold tracking-widest uppercase border border-dashed ${badgeStyle.bg}`}
 //                         >
@@ -267,25 +313,24 @@
 //                         </span>
 //                       </td>
 
-//                       <td className="px-4 py-3 text-slate-600">
+//                       <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
 //                         {r.received_date || "-"}
 //                       </td>
-//                       <td className="px-4 py-3 font-semibold text-slate-700">
+//                       <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
 //                         {r.received_txn_type || "-"}
 //                       </td>
-//                       <td className="px-4 py-3 font-mono text-xs text-slate-500">
+//                       <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-500 font-mono">
 //                         {r.received_card_no || "-"}
 //                       </td>
-//                       <td
-//                         className="px-4 py-3 text-[12px] text-slate-500 max-w-[150px] truncate"
-//                         title={r.received_comment}
-//                       >
+
+//                       {/* COMMENT WITH WRAPPING */}
+//                       <td className="px-4 py-3 border border-gray-200 text-[12px] text-slate-500 whitespace-normal min-w-[200px]">
 //                         {r.received_comment || "-"}
 //                       </td>
-//                       {/* 🔥 ACTION COLUMN 🔥 */}
-//                       <td className="px-4 py-3 text-center bg-white z-10">
+
+//                       {/* ACTION COLUMN */}
+//                       <td className="px-4 py-3 text-center border border-gray-200 bg-white z-10 whitespace-nowrap">
 //                         <div className="flex items-center justify-center gap-2">
-//                           {/* 1. UPDATE BUTTON (Sabke liye - Opens Screenshot 2 Popup) */}
 //                           <button
 //                             onClick={() => handleUpdateClick(r)}
 //                             className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-600 font-bold text-[10px] uppercase tracking-widest rounded-md border border-emerald-200 hover:bg-emerald-500 hover:text-white transition shadow-sm"
@@ -293,7 +338,6 @@
 //                             <i className="fas fa-sync-alt"></i> Update
 //                           </button>
 
-//                           {/* 2. ADMIN ONLY: PENCIL & TRASH */}
 //                           {role === "ADMIN" && (
 //                             <>
 //                               <button
@@ -306,7 +350,7 @@
 //                               <button
 //                                 onClick={() => handleDelete(r.id)}
 //                                 title="Delete Record"
-//                                 className="w-8 h-8 rounded-md bg-white border border-gray-200 text-red-400 hover:text-red-500 hover:bg-red-50 shadow-sm flex items-center justify-center transition"
+//                                 className="w-8 h-8 rounded-md bg-white border border-gray-200 text-red-500 hover:text-red-600 hover:bg-red-50 shadow-sm flex items-center justify-center transition"
 //                               >
 //                                 <i className="fas fa-trash-alt text-[12px]"></i>
 //                               </button>
@@ -323,7 +367,7 @@
 //         </div>
 
 //         {/* FOOTER */}
-//         <div className="flex justify-between items-center px-6 py-4 bg-gray-50/50 border-t border-gray-100">
+//         <div className="flex justify-between items-center px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex-shrink-0">
 //           <div className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">
 //             Total Records:{" "}
 //             <span className="text-[#e67e22] text-[13px]">{refunds.length}</span>
@@ -367,7 +411,7 @@
 //                         refund_type: e.target.value,
 //                       })
 //                     }
-//                     className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#e67e22] outline-none text-[13px] font-bold text-slate-800 transition"
+//                     className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#e67e22] focus:ring-4 focus:ring-blue-50 outline-none text-[13px] font-bold text-slate-800 transition"
 //                     placeholder="e.g. Exchange"
 //                   />
 //                 </div>
@@ -383,7 +427,7 @@
 //                         refund_status: e.target.value,
 //                       })
 //                     }
-//                     className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#e67e22] outline-none text-[13px] font-bold text-slate-800 transition"
+//                     className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#e67e22] focus:ring-4 focus:ring-blue-50 outline-none text-[13px] font-bold text-slate-800 transition"
 //                   >
 //                     <option value="Pending">Pending</option>
 //                     <option value="Completed">Completed</option>
@@ -405,7 +449,7 @@
 //                         received_date: e.target.value,
 //                       })
 //                     }
-//                     className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#e67e22] outline-none text-[13px] font-bold text-slate-800 transition"
+//                     className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#e67e22] focus:ring-4 focus:ring-blue-50 outline-none text-[13px] font-bold text-slate-800 transition"
 //                   />
 //                 </div>
 //                 <div>
@@ -421,7 +465,7 @@
 //                         received_txn_type: e.target.value,
 //                       })
 //                     }
-//                     className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#e67e22] outline-none text-[13px] font-bold text-slate-800 transition"
+//                     className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#e67e22] focus:ring-4 focus:ring-blue-50 outline-none text-[13px] font-bold text-slate-800 transition"
 //                     placeholder="e.g. NEFT, UPI"
 //                   />
 //                 </div>
@@ -440,7 +484,7 @@
 //                       received_card_no: e.target.value,
 //                     })
 //                   }
-//                   className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#e67e22] outline-none text-[13px] font-bold text-slate-800 transition"
+//                   className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#e67e22] focus:ring-4 focus:ring-blue-50 outline-none text-[13px] font-bold text-slate-800 transition"
 //                 />
 //               </div>
 
@@ -456,7 +500,7 @@
 //                       received_comment: e.target.value,
 //                     })
 //                   }
-//                   className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#e67e22] outline-none text-[13px] font-medium text-slate-800 transition custom-scrollbar"
+//                   className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#e67e22] focus:ring-4 focus:ring-blue-50 outline-none text-[13px] font-medium text-slate-800 transition custom-scrollbar"
 //                   rows="2"
 //                 />
 //               </div>
@@ -471,7 +515,7 @@
 //                 </button>
 //                 <button
 //                   type="submit"
-//                   className="px-8 py-2.5 bg-[#e67e22] hover:bg-blue-600 text-white font-bold text-[11px] uppercase tracking-widest rounded-xl shadow-md shadow-blue-500/20 transition"
+//                   className="px-8 py-2.5 bg-[#e67e22] hover:bg-[#d35400] text-white font-bold text-[11px] uppercase tracking-widest rounded-xl shadow-md shadow-[#e67e22]/20 transition"
 //                 >
 //                   Save Entry
 //                 </button>
@@ -487,6 +531,7 @@
 import React, { useState, useEffect } from "react";
 import api from "../api/axios";
 import Swal from "sweetalert2";
+import SmartLoader from "../components/SmartLoader"; // 🔥 IMPORTED SMART LOADER 🔥
 
 // --- PREMIUM SVG ICONS ---
 export const IconSearch = () => (
@@ -521,6 +566,7 @@ export const IconFilter = () => (
 
 export default function RefundManager() {
   const [refunds, setRefunds] = useState([]);
+  const [loading, setLoading] = useState(false); // 🔥 Added loading state
   const [globalSearch, setGlobalSearch] = useState("");
   const [isUpdateModalOpen, setUpdateModalOpen] = useState(false);
   const [updateData, setUpdateData] = useState({});
@@ -528,6 +574,7 @@ export default function RefundManager() {
 
   const fetchRefunds = async () => {
     try {
+      setLoading(true); // 🚀 LOADER ON
       const res = await api.get("reports/refunds/");
       let data = res.data.results || res.data;
       if (globalSearch) {
@@ -538,6 +585,8 @@ export default function RefundManager() {
       setRefunds(data);
     } catch (e) {
       console.error("Fetch error:", e);
+    } finally {
+      setLoading(false); // 🚀 LOADER OFF
     }
   };
 
@@ -561,6 +610,7 @@ export default function RefundManager() {
   const handleUpdateSubmit = async (e) => {
     e.preventDefault();
     try {
+      setLoading(true);
       await api.patch(`reports/refunds/${updateData.id}/`, updateData);
       Swal.fire({
         icon: "success",
@@ -572,6 +622,8 @@ export default function RefundManager() {
       fetchRefunds();
     } catch (e) {
       Swal.fire("Error", "Could not update details.", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -587,10 +639,13 @@ export default function RefundManager() {
     });
     if (confirm.isConfirmed) {
       try {
+        setLoading(true);
         await api.delete(`reports/refunds/${id}/`);
         fetchRefunds();
       } catch (e) {
         Swal.fire("Error", "Failed to delete.", "error");
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -663,193 +718,196 @@ export default function RefundManager() {
           </div>
         </div>
 
-        {/* 🔥 UNIFORM DATA TABLE (Premium Enterprise Theme) 🔥 */}
-        <div className="overflow-auto custom-table-scrollbar w-full flex-1 border-t border-gray-200 min-h-[60vh] max-h-[calc(100vh-180px)]">
-          <table className="w-full text-left min-w-max border-collapse whitespace-nowrap">
-            <thead className="bg-gray-50 text-slate-600 text-[11px] font-bold uppercase tracking-wider sticky top-0 z-20 shadow-sm">
-              <tr>
-                <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
-                  #
-                </th>
-                <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-                  Source Date
-                </th>
-                <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-                  Firm
-                </th>
-                <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-                  Merchant
-                </th>
-                <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-                  Order ID
-                </th>
-                <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-                  Invoice No
-                </th>
-
-                {/* Fixed Model Name Header */}
-                <th className="px-4 py-3 border border-gray-200 bg-gray-50 min-w-[250px]">
-                  Model Name
-                </th>
-
-                {/* 🔥 NEW QUANTITY COLUMN 🔥 */}
-                <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
-                  Refund Qty
-                </th>
-
-                <th className="px-4 py-3 text-right border border-gray-200 bg-gray-50">
-                  Refund Amt
-                </th>
-                <th className="px-4 py-3 border border-gray-200 bg-gray-50 text-[#e67e22]">
-                  Refund Type
-                </th>
-                <th className="px-4 py-3 border border-gray-200 bg-gray-50 text-[#e67e22] text-center">
-                  Status
-                </th>
-                <th className="px-4 py-3 border border-gray-200 bg-gray-50 text-[#e67e22]">
-                  Recv Date
-                </th>
-                <th className="px-4 py-3 border border-gray-200 bg-gray-50 text-[#e67e22]">
-                  Txn Type
-                </th>
-                <th className="px-4 py-3 border border-gray-200 bg-gray-50 text-[#e67e22]">
-                  Card No
-                </th>
-                <th className="px-4 py-3 border border-gray-200 bg-gray-50 text-[#e67e22]">
-                  Comment
-                </th>
-                <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50 z-30">
-                  Action
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white">
-              {refunds.length === 0 ? (
+        {/* 🔥 UNIFORM HIGH-DENSITY DATA TABLE WITH SMART LOADER 🔥 */}
+        <div className="overflow-auto custom-table-scrollbar w-full flex-1 border-t border-gray-200 min-h-[75vh] max-h-[calc(100vh-100px)] relative bg-white">
+          {loading ? (
+            <div className="w-full h-full min-h-[50vh] flex flex-col items-center justify-center">
+              <SmartLoader />
+            </div>
+          ) : (
+            <table className="w-full text-left min-w-max border-collapse">
+              <thead className="bg-gray-50 text-slate-600 text-[11px] font-bold uppercase tracking-wider sticky top-0 z-20 shadow-sm whitespace-nowrap">
                 <tr>
-                  <td
-                    colSpan="16"
-                    className="p-16 text-center border border-gray-200"
-                  >
-                    <div className="flex flex-col items-center justify-center">
-                      <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3 border border-gray-100">
-                        <i className="fas fa-inbox text-2xl text-gray-300"></i>
-                      </div>
-                      <p className="font-bold text-[13px] text-slate-600">
-                        No Refunds Found
-                      </p>
-                    </div>
-                  </td>
+                  <th className="px-3 py-2 text-center border border-gray-200 bg-gray-50">
+                    #
+                  </th>
+                  <th className="px-3 py-2 border border-gray-200 bg-gray-50">
+                    Source Date
+                  </th>
+                  <th className="px-3 py-2 border border-gray-200 bg-gray-50">
+                    Firm
+                  </th>
+                  <th className="px-3 py-2 border border-gray-200 bg-gray-50">
+                    Merchant
+                  </th>
+                  <th className="px-3 py-2 border border-gray-200 bg-gray-50">
+                    Order ID
+                  </th>
+                  <th className="px-3 py-2 border border-gray-200 bg-gray-50">
+                    Invoice No
+                  </th>
+                  <th className="px-3 py-2 border border-gray-200 bg-gray-50 min-w-[200px]">
+                    Model Name
+                  </th>
+                  <th className="px-3 py-2 text-center border border-gray-200 bg-gray-50">
+                    Refund Qty
+                  </th>
+                  <th className="px-3 py-2 text-right border border-gray-200 bg-gray-50">
+                    Refund Amt
+                  </th>
+                  <th className="px-3 py-2 border border-gray-200 bg-gray-50 text-[#e67e22]">
+                    Refund Type
+                  </th>
+                  <th className="px-3 py-2 border border-gray-200 bg-gray-50 text-[#e67e22] text-center">
+                    Status
+                  </th>
+                  <th className="px-3 py-2 border border-gray-200 bg-gray-50 text-[#e67e22]">
+                    Recv Date
+                  </th>
+                  <th className="px-3 py-2 border border-gray-200 bg-gray-50 text-[#e67e22]">
+                    Txn Type
+                  </th>
+                  <th className="px-3 py-2 border border-gray-200 bg-gray-50 text-[#e67e22]">
+                    Card No
+                  </th>
+                  <th className="px-3 py-2 border border-gray-200 bg-gray-50 text-[#e67e22] min-w-[200px]">
+                    Comment
+                  </th>
+                  <th className="px-3 py-2 text-center border border-gray-200 bg-gray-50 z-30">
+                    Action
+                  </th>
                 </tr>
-              ) : (
-                refunds.map((r, index) => {
-                  const badgeStyle = getBadgeStyle(r.refund_status);
-                  return (
-                    <tr
-                      key={r.id}
-                      className="hover:bg-blue-50/30 transition-colors group"
+              </thead>
+              <tbody className="bg-white">
+                {refunds.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan="16"
+                      className="p-16 text-center border border-gray-200"
                     >
-                      <td className="px-4 py-3 text-center border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                        {(index + 1).toString().padStart(2, "0")}
-                      </td>
-
-                      <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                        {r.source_date || "-"}
-                      </td>
-                      <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-bold">
-                        {r.firm || "-"}
-                      </td>
-                      <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-bold">
-                        {r.merchant || "-"}
-                      </td>
-                      <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-[#e67e22] font-bold font-mono">
-                        {r.order_id || "-"}
-                      </td>
-                      <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-800 font-bold">
-                        {r.invoice_no || "-"}
-                      </td>
-
-                      {/* 🔥 MODEL NAME FIX: REMOVED TRUNCATE, ADDED WHITESPACE-NORMAL & MIN-WIDTH 🔥 */}
-                      <td className="px-4 py-3 border border-gray-200 text-[13px] text-slate-700 font-medium whitespace-normal min-w-[250px] leading-relaxed">
-                        {r.model_name || "-"}
-                      </td>
-
-                      {/* 🔥 NEW REFUND QTY COLUMN 🔥 */}
-                      <td className="px-4 py-3 text-center border border-gray-200 whitespace-nowrap text-[13px] text-slate-800 font-bold">
-                        {r.refund_qty || r.invoice_qty || "0"}
-                      </td>
-
-                      <td className="px-4 py-3 text-right border border-gray-200 whitespace-nowrap text-[13px] font-bold text-rose-500">
-                        ₹
-                        {parseFloat(r.invoice_amount || 0).toLocaleString(
-                          "en-IN",
-                        )}
-                      </td>
-                      <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                        {r.refund_type || "-"}
-                      </td>
-
-                      <td className="px-4 py-3 text-center border border-gray-200 whitespace-nowrap">
-                        <span
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold tracking-widest uppercase border border-dashed ${badgeStyle.bg}`}
-                        >
-                          <span
-                            className={`w-1.5 h-1.5 rounded-full ${badgeStyle.dot}`}
-                          ></span>
-                          {r.refund_status || "Pending"}
-                        </span>
-                      </td>
-
-                      <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                        {r.received_date || "-"}
-                      </td>
-                      <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                        {r.received_txn_type || "-"}
-                      </td>
-                      <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-500 font-mono">
-                        {r.received_card_no || "-"}
-                      </td>
-
-                      {/* COMMENT WITH WRAPPING */}
-                      <td className="px-4 py-3 border border-gray-200 text-[12px] text-slate-500 whitespace-normal min-w-[200px]">
-                        {r.received_comment || "-"}
-                      </td>
-
-                      {/* ACTION COLUMN */}
-                      <td className="px-4 py-3 text-center border border-gray-200 bg-white z-10 whitespace-nowrap">
-                        <div className="flex items-center justify-center gap-2">
-                          <button
-                            onClick={() => handleUpdateClick(r)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-600 font-bold text-[10px] uppercase tracking-widest rounded-md border border-emerald-200 hover:bg-emerald-500 hover:text-white transition shadow-sm"
-                          >
-                            <i className="fas fa-sync-alt"></i> Update
-                          </button>
-
-                          {role === "ADMIN" && (
-                            <>
-                              <button
-                                onClick={() => handleUpdateClick(r)}
-                                title="Edit Full Record"
-                                className="w-8 h-8 rounded-md bg-white border border-gray-200 text-blue-500 hover:text-blue-600 hover:bg-blue-50 shadow-sm flex items-center justify-center transition"
-                              >
-                                <i className="fas fa-pen text-[12px]"></i>
-                              </button>
-                              <button
-                                onClick={() => handleDelete(r.id)}
-                                title="Delete Record"
-                                className="w-8 h-8 rounded-md bg-white border border-gray-200 text-red-500 hover:text-red-600 hover:bg-red-50 shadow-sm flex items-center justify-center transition"
-                              >
-                                <i className="fas fa-trash-alt text-[12px]"></i>
-                              </button>
-                            </>
-                          )}
+                      <div className="flex flex-col items-center justify-center">
+                        <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3 border border-gray-100">
+                          <i className="fas fa-inbox text-2xl text-gray-300"></i>
                         </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                        <p className="font-bold text-[13px] text-slate-600">
+                          No Refunds Found
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  refunds.map((r, index) => {
+                    const badgeStyle = getBadgeStyle(r.refund_status);
+                    return (
+                      <tr
+                        key={r.id}
+                        className="hover:bg-blue-50/30 transition-colors group"
+                      >
+                        <td className="px-3 py-1.5 text-center border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+                          {(index + 1).toString().padStart(2, "0")}
+                        </td>
+
+                        <td className="px-3 py-1.5 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+                          {r.source_date || "-"}
+                        </td>
+
+                        {/* 🔥 TEXT WRAP APPLIED HERE 🔥 */}
+                        <td className="px-3 py-1.5 border border-gray-200 text-[13px] text-slate-700 font-bold whitespace-normal min-w-[120px] max-w-[200px] break-words leading-tight">
+                          {r.firm || "-"}
+                        </td>
+                        <td className="px-3 py-1.5 border border-gray-200 text-[13px] text-slate-700 font-bold whitespace-normal min-w-[120px] max-w-[200px] break-words leading-tight">
+                          {r.merchant || "-"}
+                        </td>
+
+                        <td className="px-3 py-1.5 border border-gray-200 whitespace-nowrap text-[13px] text-[#e67e22] font-bold font-mono">
+                          {r.order_id || "-"}
+                        </td>
+                        <td className="px-3 py-1.5 border border-gray-200 whitespace-nowrap text-[13px] text-slate-800 font-bold">
+                          {r.invoice_no || "-"}
+                        </td>
+
+                        {/* 🔥 MODEL NAME FIX: REMOVED TRUNCATE, ADDED WHITESPACE-NORMAL & MIN-WIDTH 🔥 */}
+                        <td className="px-3 py-1.5 border border-gray-200 text-[13px] text-slate-700 font-medium whitespace-normal min-w-[200px] max-w-[300px] break-words leading-snug">
+                          {r.model_name || "-"}
+                        </td>
+
+                        <td className="px-3 py-1.5 text-center border border-gray-200 whitespace-nowrap text-[13px] text-slate-800 font-bold">
+                          {r.refund_qty || r.invoice_qty || "0"}
+                        </td>
+
+                        <td className="px-3 py-1.5 text-right border border-gray-200 whitespace-nowrap text-[13px] font-bold text-rose-500">
+                          ₹
+                          {parseFloat(r.invoice_amount || 0).toLocaleString(
+                            "en-IN",
+                          )}
+                        </td>
+                        <td className="px-3 py-1.5 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+                          {r.refund_type || "-"}
+                        </td>
+
+                        <td className="px-3 py-1.5 text-center border border-gray-200 whitespace-nowrap">
+                          <span
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold tracking-widest uppercase border border-dashed ${badgeStyle.bg}`}
+                          >
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full ${badgeStyle.dot}`}
+                            ></span>
+                            {r.refund_status || "Pending"}
+                          </span>
+                        </td>
+
+                        <td className="px-3 py-1.5 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+                          {r.received_date || "-"}
+                        </td>
+                        <td className="px-3 py-1.5 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+                          {r.received_txn_type || "-"}
+                        </td>
+                        <td className="px-3 py-1.5 border border-gray-200 whitespace-nowrap text-[13px] text-slate-500 font-mono">
+                          {r.received_card_no || "-"}
+                        </td>
+
+                        {/* 🔥 COMMENT WITH WRAPPING 🔥 */}
+                        <td className="px-3 py-1.5 border border-gray-200 text-[12px] text-slate-500 whitespace-normal min-w-[200px] max-w-[300px] break-words leading-tight">
+                          {r.received_comment || "-"}
+                        </td>
+
+                        {/* ACTION COLUMN */}
+                        <td className="px-3 py-1.5 text-center border border-gray-200 bg-white z-10 whitespace-nowrap">
+                          <div className="flex items-center justify-center gap-1.5">
+                            <button
+                              onClick={() => handleUpdateClick(r)}
+                              className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-600 font-bold text-[9px] uppercase tracking-widest rounded-md border border-emerald-200 hover:bg-emerald-500 hover:text-white transition shadow-sm"
+                            >
+                              <i className="fas fa-sync-alt"></i> Update
+                            </button>
+
+                            {role === "ADMIN" && (
+                              <>
+                                <button
+                                  onClick={() => handleUpdateClick(r)}
+                                  title="Edit Full Record"
+                                  className="w-7 h-7 rounded-md bg-white border border-gray-200 text-blue-500 hover:text-blue-600 hover:bg-blue-50 shadow-sm flex items-center justify-center transition"
+                                >
+                                  <i className="fas fa-pen text-[11px]"></i>
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(r.id)}
+                                  title="Delete Record"
+                                  className="w-7 h-7 rounded-md bg-white border border-gray-200 text-red-400 hover:text-red-500 hover:bg-red-50 shadow-sm flex items-center justify-center transition"
+                                >
+                                  <i className="fas fa-trash-alt text-[11px]"></i>
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
 
         {/* FOOTER */}
@@ -897,7 +955,7 @@ export default function RefundManager() {
                         refund_type: e.target.value,
                       })
                     }
-                    className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#e67e22] focus:ring-4 focus:ring-blue-50 outline-none text-[13px] font-bold text-slate-800 transition"
+                    className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#e67e22] outline-none text-[13px] font-bold text-slate-800 transition"
                     placeholder="e.g. Exchange"
                   />
                 </div>
@@ -913,7 +971,7 @@ export default function RefundManager() {
                         refund_status: e.target.value,
                       })
                     }
-                    className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#e67e22] focus:ring-4 focus:ring-blue-50 outline-none text-[13px] font-bold text-slate-800 transition"
+                    className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#e67e22] outline-none text-[13px] font-bold text-slate-800 transition"
                   >
                     <option value="Pending">Pending</option>
                     <option value="Completed">Completed</option>
@@ -935,7 +993,7 @@ export default function RefundManager() {
                         received_date: e.target.value,
                       })
                     }
-                    className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#e67e22] focus:ring-4 focus:ring-blue-50 outline-none text-[13px] font-bold text-slate-800 transition"
+                    className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#e67e22] outline-none text-[13px] font-bold text-slate-800 transition"
                   />
                 </div>
                 <div>
@@ -951,7 +1009,7 @@ export default function RefundManager() {
                         received_txn_type: e.target.value,
                       })
                     }
-                    className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#e67e22] focus:ring-4 focus:ring-blue-50 outline-none text-[13px] font-bold text-slate-800 transition"
+                    className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#e67e22] outline-none text-[13px] font-bold text-slate-800 transition"
                     placeholder="e.g. NEFT, UPI"
                   />
                 </div>
@@ -970,7 +1028,7 @@ export default function RefundManager() {
                       received_card_no: e.target.value,
                     })
                   }
-                  className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#e67e22] focus:ring-4 focus:ring-blue-50 outline-none text-[13px] font-bold text-slate-800 transition"
+                  className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#e67e22] outline-none text-[13px] font-bold text-slate-800 transition"
                 />
               </div>
 
@@ -986,7 +1044,7 @@ export default function RefundManager() {
                       received_comment: e.target.value,
                     })
                   }
-                  className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#e67e22] focus:ring-4 focus:ring-blue-50 outline-none text-[13px] font-medium text-slate-800 transition custom-scrollbar"
+                  className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#e67e22] outline-none text-[13px] font-medium text-slate-800 transition custom-scrollbar"
                   rows="2"
                 />
               </div>
@@ -1001,9 +1059,16 @@ export default function RefundManager() {
                 </button>
                 <button
                   type="submit"
-                  className="px-8 py-2.5 bg-[#e67e22] hover:bg-[#d35400] text-white font-bold text-[11px] uppercase tracking-widest rounded-xl shadow-md shadow-[#e67e22]/20 transition"
+                  disabled={loading}
+                  className="px-8 py-2.5 bg-[#e67e22] hover:bg-[#d35400] text-white font-bold text-[11px] uppercase tracking-widest rounded-xl shadow-md shadow-[#e67e22]/20 transition disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  Save Entry
+                  {loading ? (
+                    <>
+                      <i className="fas fa-spinner fa-spin"></i> Saving...
+                    </>
+                  ) : (
+                    "Save Entry"
+                  )}
                 </button>
               </div>
             </form>

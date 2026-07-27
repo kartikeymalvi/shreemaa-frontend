@@ -1,6 +1,7 @@
 // import React, { useState, useEffect, useRef } from "react";
 // import api from "../api/axios";
 // import Swal from "sweetalert2";
+// import SmartLoader from "../components/SmartLoader";
 
 // // --- 🛠️ HELPER FUNCTIONS ---
 // const formatDate = (dateStr) => {
@@ -20,7 +21,7 @@
 //   }).format(num);
 // };
 
-// // --- 🔥 PREMIUM SVG ICONS (YAHIN DEFINE KIYE HAIN TAANKI ERROR NA AAYE) 🔥 ---
+// // --- 🔥 PREMIUM SVG ICONS ---
 // export const IconDownload = () => (
 //   <svg
 //     width="16"
@@ -148,24 +149,15 @@
 
 //   // Row Locks
 //   const [unlockedRows, setUnlockedRows] = useState({});
-//   const [manuallyLockedRows, setManuallyLockedRows] = useState({}); // 🔥 Naya state lock enforce karne ke liye
-
-
-//   const [isBulkUpdateModalOpen, setBulkUpdateModalOpen] = useState(false);
-//   const [bulkUpdateData, setBulkUpdateData] = useState({
-//     delivery_status: "Pending",
-//     delivery_date: "",
-//   });
-
-  
+//   const [manuallyLockedRows, setManuallyLockedRows] = useState({});
 
 //   // Modals States
 //   const [isUploadModalOpen, setUploadModalOpen] = useState(false);
 //   const [isFormModalOpen, setFormModalOpen] = useState(false);
 //   const [isViewSetupModalOpen, setViewSetupModalOpen] = useState(false);
-//   const [isViewSummaryModalOpen, setViewSummaryModalOpen] = useState(false);
-//   const [viewSummaryData, setViewSummaryData] = useState(null);
-//   const [isUpdateModalOpen, setUpdateModalOpen] = useState(false); // 🔥 UPDATE MODAL
+//   const [isFilterModalOpen, setFilterModalOpen] = useState(false);
+//   const [isUpdateModalOpen, setUpdateModalOpen] = useState(false);
+//   const [isBulkUpdateModalOpen, setBulkUpdateModalOpen] = useState(false); // 🔥 BULK UPDATE MODAL STATE 🔥
 
 //   const [editMode, setEditMode] = useState(false);
 //   const [editId, setEditId] = useState(null);
@@ -186,6 +178,7 @@
 //   const [itemsData, setItemsData] = useState([]);
 
 //   const [filters, setFilters] = useState({
+//     date_type: "txn_date",
 //     start_date: "",
 //     end_date: "",
 //     order_id: "",
@@ -196,13 +189,19 @@
 //     merchant: "",
 //   });
 
-//   // 🔥 UPDATE MODAL STATE 🔥
 //   const [updateData, setUpdateData] = useState({
 //     id: "",
 //     invoice_status: "Open",
 //     delivery_status: "Pending",
 //     delivery_date: "",
 //     cancel_reason: "",
+//   });
+
+//   // 🔥 BULK UPDATE DATA STATE 🔥
+//   const [bulkUpdateData, setBulkUpdateData] = useState({
+//     delivery_status: "Pending",
+//     delivery_date: "",
+//     cancel_reason: "", // Added Cancel Reason for Bulk Update
 //   });
 
 //   // --- DYNAMIC COLUMN VISIBILITY STATE ---
@@ -252,6 +251,7 @@
 
 //   const fetchData = async () => {
 //     try {
+//       setLoading(true); // 🚀 LOADER ON 🚀
 //       const queryParams = new URLSearchParams(
 //         Object.entries(filters).filter(([_, v]) => v !== ""),
 //       );
@@ -272,9 +272,10 @@
 //         setViewSettings(settingsRes.data);
 //     } catch (error) {
 //       console.error("Fetch data error:", error);
+//     } finally {
+//       setLoading(false); // 🚀 LOADER OFF 🚀
 //     }
 //   };
-//   const [isFilterModalOpen, setFilterModalOpen] = useState(false);
 
 //   useEffect(() => {
 //     fetchData();
@@ -283,14 +284,25 @@
 //   const showCol = (colName) =>
 //     role === "ADMIN" ? true : viewSettings[colName] !== false;
 
-//   // --- AUTOMATIC INWARD STATUS LOGIC ---
 //   const computeInwardStatus = (row) => {
+//     // 1. Pehle Cancel check karega
 //     if (
 //       row.invoice_status?.toLowerCase() === "cancel" ||
 //       row.delivery_status?.toLowerCase() === "cancelled"
-//     )
+//     ) {
 //       return "Cancel";
-//     if (row.grpo_qty > 0) return "Completed";
+//     }
+
+//     // 2. 🔥 NAYA LOGIC: Ab ye direct backend ki 'inward_status' field ko padhega 🔥
+//     if (row.inward_status?.toLowerCase() === "done") {
+//       return "Done"; // Ya aap chaho toh "Completed" bhi return karwa sakte ho
+//     }
+
+//     // 3. Purana fallback logic (just for safety)
+//     if (row.grpo_qty > 0) {
+//       return "Completed";
+//     }
+
 //     return "Pending";
 //   };
 
@@ -301,18 +313,18 @@
 //         viewSettings,
 //       );
 //       Swal.fire({
+//         icon: "success",
 //         title: "Updated!",
 //         text: "Table View Updated successfully.",
-//         icon: "success",
 //         confirmButtonColor: "#0f172a",
 //       });
 //       setViewSetupModalOpen(false);
 //       fetchData();
 //     } catch (error) {
 //       Swal.fire({
+//         icon: "error",
 //         title: "Error",
 //         text: "Failed to save view.",
-//         icon: "error",
 //         confirmButtonColor: "#0f172a",
 //       });
 //     }
@@ -322,6 +334,7 @@
 //     setSelectedIds((prev) =>
 //       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
 //     );
+
 //   const handleSelectAll = (currentDataArray) => {
 //     if (
 //       selectedIds.length === currentDataArray.length &&
@@ -345,7 +358,6 @@
 //       icon: "warning",
 //       showCancelButton: true,
 //       confirmButtonColor: "#dc2626",
-//       cancelButtonColor: "#cbd5e1",
 //       confirmButtonText: "Yes, delete!",
 //     });
 //     if (confirm.isConfirmed) {
@@ -428,6 +440,7 @@
 //     }
 //   };
 
+//   // 🔥 UPDATED BULK SUBMIT LOGIC WITH CANCEL REASON 🔥
 //   const handleBulkUpdateSubmit = async (e) => {
 //     e.preventDefault();
 //     setLoading(true);
@@ -436,6 +449,7 @@
 //         ids: selectedIds,
 //         delivery_status: bulkUpdateData.delivery_status,
 //         delivery_date: bulkUpdateData.delivery_date,
+//         cancel_reason: bulkUpdateData.cancel_reason,
 //       });
 //       Swal.fire({
 //         title: "Bulk Updated!",
@@ -481,16 +495,6 @@
 //     setItemsData(updatedItems);
 //   };
 
-//   const handleViewClick = async (orderId) => {
-//     try {
-//       const res = await api.get(`reports/order-summary/${orderId}/`);
-//       setViewSummaryData(res.data);
-//       setViewSummaryModalOpen(true);
-//     } catch (error) {
-//       Swal.fire("Error fetching order summary.");
-//     }
-//   };
-
 //   const handleEditClick = (shipment) => {
 //     setSearchOrderId(shipment.order_id);
 //     setHeaderData({
@@ -506,7 +510,6 @@
 //     setFormModalOpen(true);
 //   };
 
-//   // 🔥 UPDATE BUTTON HANDLER (POPUP OPENER) 🔥
 //   const handleUpdateClick = (ship) => {
 //     setUpdateData({
 //       id: ship.id,
@@ -518,7 +521,6 @@
 //     setUpdateModalOpen(true);
 //   };
 
-//   // 🔥 UPDATE SAVE HANDLER (LOCKS THE ROW) 🔥
 //   const handleUpdateSubmit = async (e) => {
 //     e.preventDefault();
 //     setLoading(true);
@@ -531,16 +533,12 @@
 //         confirmButtonColor: "#0f172a",
 //       });
 //       setUpdateModalOpen(false);
-
-//       // Update karne ke baad Row automatically lock ho jayegi
 //       setManuallyLockedRows((prev) => ({ ...prev, [updateData.id]: true }));
-//       // Agar pehle admin ne unlock ki thi, toh use wapas lock state me bhej dega
 //       setUnlockedRows((prev) => {
 //         const next = { ...prev };
 //         delete next[updateData.id];
 //         return next;
 //       });
-
 //       fetchData();
 //     } catch (e) {
 //       Swal.fire({
@@ -563,7 +561,6 @@
 //         icon: "warning",
 //         confirmButtonColor: "#0f172a",
 //       });
-
 //     const validItemsToSave = itemsData.filter(
 //       (item) =>
 //         item.invoice_no &&
@@ -574,7 +571,7 @@
 //     if (validItemsToSave.length === 0)
 //       return Swal.fire({
 //         title: "Incomplete Data",
-//         text: "Please fill 'Seller Name' and 'Invoice No' to save data.",
+//         text: "Please fill 'Seller Name' and 'Invoice No'.",
 //         icon: "error",
 //         confirmButtonColor: "#0f172a",
 //       });
@@ -606,7 +603,7 @@
 //         await Promise.all(apiCalls);
 //         Swal.fire({
 //           title: "Saved!",
-//           text: `Successfully saved ${validItemsToSave.length} fresh Shipment Record(s)!`,
+//           text: `Successfully saved ${validItemsToSave.length} Shipment Record(s)!`,
 //           icon: "success",
 //           confirmButtonColor: "#0f172a",
 //         });
@@ -709,9 +706,8 @@
 //       "Delivery Date",
 //     ];
 //     const csvContent = "data:text/csv;charset=utf-8," + headers.join(",");
-//     const encodedUri = encodeURI(csvContent);
 //     const link = document.createElement("a");
-//     link.setAttribute("href", encodedUri);
+//     link.setAttribute("href", encodeURI(csvContent));
 //     link.setAttribute("download", "Invoice_Shipment_Template.csv");
 //     document.body.appendChild(link);
 //     link.click();
@@ -790,9 +786,16 @@
 //   };
 
 //   return (
-//     <div className="bg-transparent min-h-screen font-sans pb-10">
-//       {/* HEADER & TOP BUTTONS */}
-//       <div className="bg-white px-6 py-4 border-b border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4 rounded-t-[16px] shadow-[0_2px_12px_rgba(0,0,0,0.03)] mx-6 mt-6">
+//     <div className="bg-transparent font-sans h-full flex flex-col pb-4 text-slate-700">
+//       <style>{`
+//         .custom-table-scrollbar::-webkit-scrollbar { height: 10px; width: 10px; }
+//         .custom-table-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+//         .custom-table-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 5px; }
+//         .custom-table-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+//       `}</style>
+
+//       {/* HEADER */}
+//       <div className="bg-white px-6 py-4 border border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4 rounded-t-xl mb-4">
 //         <div>
 //           <p className="text-[12px] text-gray-400 font-medium mb-1 tracking-wide">
 //             Modules / <span className="text-slate-600">Invoices</span>
@@ -803,543 +806,549 @@
 //         </div>
 //       </div>
 
-//       {/* --- TOOLBAR --- */}
-//       <div className="mx-6 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.03)] border-x border-gray-100 flex flex-col md:flex-row justify-between items-center px-6 py-4 gap-4">
-//         <div className="flex flex-wrap gap-3 items-center w-full md:w-auto">
-//           {/* Global Search */}
-//           <div className="flex items-center bg-gray-50/80 px-4 py-2.5 rounded-full w-full md:w-[320px] border border-gray-100 focus-within:bg-white focus-within:border-blue-300 focus-within:ring-4 focus-within:ring-blue-50 transition-all">
-//             <IconSearch />
-//             <input
-//               type="text"
-//               placeholder="Search tracking ID, order, invoice..."
-//               value={globalSearch}
-//               onChange={(e) => setGlobalSearch(e.target.value)}
-//               onKeyDown={(e) => e.key === "Enter" && fetchData()}
-//               className="bg-transparent border-none outline-none ml-3 text-[13px] w-full font-medium text-slate-700 placeholder-gray-400"
-//             />
-//             {globalSearch && (
+//       {/* --- MAIN CARD WRAPPER --- */}
+//       <div className="bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden flex flex-col flex-1">
+//         {/* TOOLBAR */}
+//         <div className="flex flex-col md:flex-row justify-between items-center px-6 py-4 border-b border-gray-100 bg-white gap-4 flex-shrink-0">
+//           <div className="flex flex-wrap gap-3 items-center w-full md:w-auto">
+//             <div className="flex items-center bg-gray-50/80 px-4 py-2.5 rounded-full w-full md:w-[320px] border border-gray-100 focus-within:bg-white focus-within:border-[#e67e22] focus-within:ring-2 focus-within:ring-blue-50 transition-all">
+//               <IconSearch />
+//               <input
+//                 type="text"
+//                 placeholder="Search tracking ID, order, invoice..."
+//                 value={globalSearch}
+//                 onChange={(e) => setGlobalSearch(e.target.value)}
+//                 onKeyDown={(e) => e.key === "Enter" && fetchData()}
+//                 className="bg-transparent border-none outline-none ml-3 text-[13px] w-full font-medium text-slate-700 placeholder-gray-400"
+//               />
+//               {globalSearch && (
+//                 <button
+//                   onClick={() => {
+//                     setGlobalSearch("");
+//                     fetchData();
+//                   }}
+//                   className="text-gray-400 hover:text-gray-600 ml-2"
+//                 >
+//                   <i className="fas fa-times-circle"></i>
+//                 </button>
+//               )}
+//             </div>
+
+//             <button
+//               onClick={() => setFilterModalOpen(true)}
+//               className={`flex items-center gap-1.5 px-4 py-2.5 rounded-full border text-[13px] font-bold transition-colors shadow-sm whitespace-nowrap ${Object.values(filters).some((x) => x !== "" && x !== "txn_date") ? "bg-blue-50 border-blue-200 text-[#e67e22]" : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50"}`}
+//             >
+//               <IconFilter /> Filter
+//               {Object.values(filters).some(
+//                 (x) => x !== "" && x !== "txn_date",
+//               ) && (
+//                 <span className="w-2 h-2 bg-[#e67e22] rounded-full ml-1"></span>
+//               )}
+//             </button>
+//           </div>
+
+//           <div className="flex items-center gap-3 w-full md:w-auto overflow-x-auto [&::-webkit-scrollbar]:hidden pb-1 md:pb-0">
+//             {role === "ADMIN" && (
 //               <button
-//                 onClick={() => {
-//                   setGlobalSearch("");
-//                   fetchData();
-//                 }}
-//                 className="text-gray-400 hover:text-gray-600 ml-2"
+//                 onClick={() => setViewSetupModalOpen(true)}
+//                 className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 text-gray-500 rounded-[10px] text-[12px] font-bold hover:bg-gray-50 hover:text-[#e67e22] transition shadow-sm whitespace-nowrap"
 //               >
-//                 <i className="fas fa-times-circle"></i>
+//                 <IconColumns /> View Headers
 //               </button>
 //             )}
-//           </div>
 
-//           <button
-//             onClick={() => setFilterModalOpen(true)}
-//             className="flex items-center gap-1.5 px-4 py-2.5 rounded-full border text-[13px] font-bold shadow-sm whitespace-nowrap bg-white border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors"
-//           >
-//             <IconFilter /> Filter{" "}
-//             {Object.values(filters).some((x) => x !== "") && (
-//               <span className="w-2 h-2 bg-amber-500 rounded-full ml-1"></span>
+//             <div className="flex items-center gap-2 bg-white p-1.5 rounded-[12px] border border-gray-200 shadow-sm">
+//               <button
+//                 onClick={handleDownloadTemplate}
+//                 title="Download CSV Template"
+//                 className="flex items-center justify-center w-8 h-8 text-slate-500 bg-gray-50 rounded-lg hover:bg-blue-50 hover:text-[#e67e22] transition"
+//               >
+//                 <IconTemplate />
+//               </button>
+//               <input
+//                 type="file"
+//                 accept=".xlsx, .csv"
+//                 ref={fileInputRef}
+//                 onChange={handleFileChange}
+//                 className="hidden"
+//               />
+//               <button
+//                 onClick={() => setUploadModalOpen(true)}
+//                 title="Upload Bulk Excel"
+//                 className="flex items-center justify-center w-8 h-8 text-slate-500 bg-gray-50 rounded-lg hover:bg-green-50 hover:text-[#52c41a] transition"
+//               >
+//                 <IconUpload />
+//               </button>
+//               <button
+//                 onClick={handleExportExcel}
+//                 disabled={loading}
+//                 title="Export Data"
+//                 className="flex items-center justify-center w-8 h-8 text-slate-500 bg-gray-50 rounded-lg hover:bg-purple-50 hover:text-[#722ed1] transition disabled:opacity-50"
+//               >
+//                 <IconDownload />
+//               </button>
+//             </div>
+
+//             {role === "ADMIN" && selectedIds.length > 0 && (
+//               <button
+//                 onClick={() =>
+//                   handleBulkDelete("reports/invoices/bulk-delete/")
+//                 }
+//                 className="flex items-center gap-2 px-4 py-2.5 bg-red-50 text-[#ff4d4f] border border-red-100 rounded-[10px] text-[12px] font-bold shadow-sm transition animate-in zoom-in whitespace-nowrap hover:bg-red-100"
+//               >
+//                 <i className="fas fa-trash-alt"></i> Delete (
+//                 {selectedIds.length})
+//               </button>
 //             )}
-//           </button>
-//         </div>
 
-//         <div className="flex items-center gap-3 w-full md:w-auto overflow-x-auto [&::-webkit-scrollbar]:hidden pb-1 md:pb-0">
-//           {role === "ADMIN" && (
-//             <button
-//               onClick={() => setViewSetupModalOpen(true)}
-//               className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 text-gray-500 rounded-[10px] text-[12px] font-bold hover:bg-gray-50 hover:text-[#e67e22] transition shadow-sm whitespace-nowrap"
-//             >
-//               <IconColumns /> View Headers
-//             </button>
-//           )}
+//             {/* 🔥 BULK UPDATE BUTTON FIXED 🔥 */}
+//             {selectedIds.length > 0 && (
+//               <button
+//                 onClick={() => setBulkUpdateModalOpen(true)}
+//                 className="flex items-center gap-2 px-4 py-2.5 bg-blue-50 text-[#1677ff] border border-blue-100 rounded-[10px] text-[12px] font-bold shadow-sm transition animate-in zoom-in whitespace-nowrap hover:bg-blue-100"
+//               >
+//                 <i className="fas fa-sync-alt"></i> Bulk Update (
+//                 {selectedIds.length})
+//               </button>
+//             )}
 
-//           <div className="flex items-center gap-2 bg-white p-1.5 rounded-[12px] border border-gray-200 shadow-sm">
 //             <button
-//               onClick={handleDownloadTemplate}
-//               title="Download CSV Template"
-//               className="flex items-center justify-center w-8 h-8 text-slate-500 bg-gray-50 rounded-lg hover:bg-blue-50 hover:text-[#e67e22] transition"
+//               onClick={() => {
+//                 setSearchOrderId("");
+//                 setItemsData([]);
+//                 setHeaderData(initialHeaderState);
+//                 setEditMode(false);
+//                 setFormModalOpen(true);
+//               }}
+//               className="flex items-center gap-2 px-5 py-2.5 bg-[#e67e22] hover:bg-[#d35400] text-white rounded-[10px] transition font-bold text-[13px] shadow-md shadow-[#e67e22]/20 whitespace-nowrap"
 //             >
-//               <IconTemplate />
-//             </button>
-//             <input
-//               type="file"
-//               accept=".xlsx, .csv"
-//               ref={fileInputRef}
-//               onChange={handleFileChange}
-//               className="hidden"
-//             />
-//             <button
-//               onClick={() => setUploadModalOpen(true)}
-//               title="Upload Bulk Excel"
-//               className="flex items-center justify-center w-8 h-8 text-slate-500 bg-gray-50 rounded-lg hover:bg-green-50 hover:text-[#52c41a] transition"
-//             >
-//               <IconUpload />
-//             </button>
-//             <button
-//               onClick={handleExportExcel}
-//               disabled={loading}
-//               title="Export Data"
-//               className="flex items-center justify-center w-8 h-8 text-slate-500 bg-gray-50 rounded-lg hover:bg-purple-50 hover:text-[#722ed1] transition disabled:opacity-50"
-//             >
-//               <IconDownload />
+//               <IconPlus /> New Entry
 //             </button>
 //           </div>
-
-//           {role === "ADMIN" && selectedIds.length > 0 && (
-//             <button
-//               onClick={() => handleBulkDelete("reports/invoices/bulk-delete/")}
-//               className="flex items-center gap-2 px-4 py-2.5 bg-red-50 text-[#ff4d4f] border border-red-100 rounded-[10px] text-[12px] font-bold shadow-sm transition animate-in zoom-in whitespace-nowrap hover:bg-red-100"
-//             >
-//               <i className="fas fa-trash-alt"></i> Delete ({selectedIds.length})
-//             </button>
-//           )}
-//           {/* NAYA BULK UPDATE BUTTON */}
-//           {selectedIds.length > 0 && (
-//             <button
-//               onClick={() => setBulkUpdateModalOpen(true)}
-//               className="flex items-center gap-2 px-4 py-2.5 bg-blue-50 text-blue-600 border border-blue-100 rounded-[10px] text-[12px] font-bold shadow-sm transition animate-in zoom-in whitespace-nowrap hover:bg-blue-100"
-//             >
-//               <i className="fas fa-sync-alt"></i> Bulk Update (
-//               {selectedIds.length})
-//             </button>
-//           )}
-
-//           <button
-//             onClick={() => {
-//               setSearchOrderId("");
-//               setItemsData([]);
-//               setHeaderData(initialHeaderState);
-//               setEditMode(false);
-//               setFormModalOpen(true);
-//             }}
-//             className="flex items-center gap-2 px-5 py-2.5 bg-[#e67e22] hover:bg-blue-600 text-white rounded-[10px] transition font-bold text-[13px] shadow-md shadow-blue-500/20 whitespace-nowrap"
-//           >
-//             <IconPlus /> New Entry
-//           </button>
 //         </div>
-//       </div>
 
-//       {/* MAIN DATA TABLE */}
-//       <div className="mx-6 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.03)] border-x border-b border-gray-100 rounded-b-[16px] overflow-hidden flex flex-col">
-//         <div className="overflow-x-auto w-full [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] min-h-[50vh] max-h-[65vh]">
-//           <table className="w-full text-left min-w-max border-collapse whitespace-nowrap">
-//             <thead className="bg-gray-50/50 text-slate-500 text-[11px] font-bold uppercase tracking-widest sticky top-0 z-20 backdrop-blur-md shadow-sm">
-//               <tr>
-//                 {role === "ADMIN" && (
-//                   <th className="px-4 py-3 text-center border border-gray-200 w-12 bg-gray-50">
-//                     <input
-//                       type="checkbox"
-//                       onChange={() => handleSelectAll(shipments)}
-//                       checked={
-//                         shipments.length > 0 &&
-//                         selectedIds.length === shipments.length
-//                       }
-//                       className="w-4 h-4 rounded border-gray-300 text-[#e67e22] focus:ring-[#e67e22] cursor-pointer"
-//                     />
-//                   </th>
-//                 )}
-//                 <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
-//                   #
-//                 </th>
-//                 {showCol("show_order_id") && (
-//                   <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-//                     Order ID
-//                   </th>
-//                 )}
-//                 {showCol("show_txn_date") && (
-//                   <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-//                     Txn Date
-//                   </th>
-//                 )}
-//                 {showCol("show_firm") && (
-//                   <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-//                     Firm
-//                   </th>
-//                 )}
-//                 {showCol("show_location") && (
-//                   <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-//                     Location
-//                   </th>
-//                 )}
-
-//                 {showCol("show_seller_name") && (
-//                   <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-//                     Seller Name
-//                   </th>
-//                 )}
-//                 {showCol("show_seller_gstn") && (
-//                   <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-//                     Seller GSTN
-//                   </th>
-//                 )}
-
-//                 {showCol("show_asin_fsn") && (
-//                   <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-//                     ASIN/FSN
-//                   </th>
-//                 )}
-//                 {showCol("show_model_name") && (
-//                   <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-//                     Model Name
-//                   </th>
-//                 )}
-//                 {showCol("show_model_no") && (
-//                   <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-//                     Model No
-//                   </th>
-//                 )}
-//                 {showCol("show_unit_price") && (
-//                   <th className="px-4 py-3 text-right border border-gray-200 bg-gray-50">
-//                     Unit Price
-//                   </th>
-//                 )}
-
-//                 {showCol("show_invoice_no") && (
-//                   <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-//                     Invoice No
-//                   </th>
-//                 )}
-//                 {showCol("show_invoice_date") && (
-//                   <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-//                     Invoice Date
-//                   </th>
-//                 )}
-//                 {showCol("show_invoice_qty") && (
-//                   <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
-//                     Inv Qty
-//                   </th>
-//                 )}
-//                 {showCol("show_invoice_amount") && (
-//                   <th className="px-4 py-3 text-right border border-gray-200 bg-gray-50">
-//                     Inv Amount
-//                   </th>
-//                 )}
-
-//                 {/* Naye Fields */}
-//                 {showCol("show_inward_status") && (
-//                   <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
-//                     Inward Status
-//                   </th>
-//                 )}
-//                 {showCol("show_cancel_reason") && (
-//                   <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-//                     Cancel Reason
-//                   </th>
-//                 )}
-//                 {showCol("show_grpo_qty") && (
-//                   <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
-//                     GRPO Qty
-//                   </th>
-//                 )}
-//                 {showCol("show_grpo_pending_qty") && (
-//                   <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
-//                     Pending Qty
-//                   </th>
-//                 )}
-//                 {showCol("show_grpo_pending_amount") && (
-//                   <th className="px-4 py-3 text-right border border-gray-200 bg-gray-50">
-//                     Pending Amt
-//                   </th>
-//                 )}
-//                 {showCol("show_discrepancy_amount") && (
-//                   <th className="px-4 py-3 text-right border border-gray-200 bg-gray-50">
-//                     Discrepancy Amt
-//                   </th>
-//                 )}
-//                 {showCol("show_refund_discrepancy") && (
-//                   <th className="px-4 py-3 text-right border border-gray-200 bg-gray-50">
-//                     Refund Amt
-//                   </th>
-//                 )}
-
-//                 {showCol("show_tracking_id") && (
-//                   <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
-//                     Tracking ID
-//                   </th>
-//                 )}
-//                 {showCol("show_delivery_status") && (
-//                   <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
-//                     Invoice Status
-//                   </th>
-//                 )}
-//                 {showCol("show_delivery_date") && (
-//                   <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
-//                     Del Date
-//                   </th>
-//                 )}
-//                 <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
-//                   Actions
-//                 </th>
-//               </tr>
-//             </thead>
-//             <tbody className="text-[13.5px] font-medium text-slate-700 bg-white">
-//               {shipments.length === 0 ? (
+//         {/* 🔥 UNIFORM DATA TABLE 🔥 */}
+//         <div className="overflow-auto custom-table-scrollbar w-full flex-1 border-t border-gray-200 min-h-[60vh] max-h-[calc(100vh-180px)] bg-white relative">
+//           {/* 🚀 BORED HAND 3D LOADER CONDITION 🚀 */}
+//           {loading ? (
+//             <div className="w-full flex flex-col items-center justify-center min-h-[50vh]">
+//               <SmartLoader />
+//             </div>
+//           ) : (
+//             <table className="w-full text-left min-w-max border-collapse whitespace-nowrap">
+//               <thead className="bg-gray-50 text-slate-600 text-[11px] font-bold uppercase tracking-wider sticky top-0 z-20 shadow-sm">
 //                 <tr>
-//                   <td
-//                     colSpan="30"
-//                     className="p-16 text-center border border-gray-200"
-//                   >
-//                     <div className="flex flex-col items-center justify-center">
-//                       <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3 border border-gray-100">
-//                         <i className="fas fa-inbox text-2xl text-gray-300"></i>
-//                       </div>
-//                       <p className="font-bold text-slate-600">
-//                         No Shipments Found
-//                       </p>
-//                     </div>
-//                   </td>
+//                   {role === "ADMIN" && (
+//                     <th className="px-4 py-3 text-center border border-gray-200 w-12 bg-gray-50">
+//                       <input
+//                         type="checkbox"
+//                         onChange={() => handleSelectAll(shipments)}
+//                         checked={
+//                           shipments.length > 0 &&
+//                           selectedIds.length === shipments.length
+//                         }
+//                         className="w-4 h-4 rounded border-gray-300 text-[#e67e22] focus:ring-[#e67e22] cursor-pointer"
+//                       />
+//                     </th>
+//                   )}
+//                   <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
+//                     #
+//                   </th>
+//                   {showCol("show_order_id") && (
+//                     <th className="px-4 py-3 border border-gray-200 bg-gray-50">
+//                       Order ID
+//                     </th>
+//                   )}
+//                   {showCol("show_txn_date") && (
+//                     <th className="px-4 py-3 border border-gray-200 bg-gray-50">
+//                       Txn Date
+//                     </th>
+//                   )}
+//                   {showCol("show_firm") && (
+//                     <th className="px-4 py-3 border border-gray-200 bg-gray-50">
+//                       Firm
+//                     </th>
+//                   )}
+//                   {showCol("show_location") && (
+//                     <th className="px-4 py-3 border border-gray-200 bg-gray-50">
+//                       Location
+//                     </th>
+//                   )}
+//                   {showCol("show_seller_name") && (
+//                     <th className="px-4 py-3 border border-gray-200 bg-gray-50">
+//                       Seller Name
+//                     </th>
+//                   )}
+//                   {showCol("show_seller_gstn") && (
+//                     <th className="px-4 py-3 border border-gray-200 bg-gray-50">
+//                       Seller GSTN
+//                     </th>
+//                   )}
+//                   {showCol("show_asin_fsn") && (
+//                     <th className="px-4 py-3 border border-gray-200 bg-gray-50">
+//                       ASIN/FSN
+//                     </th>
+//                   )}
+//                   {showCol("show_model_name") && (
+//                     <th className="px-4 py-3 border border-gray-200 bg-gray-50">
+//                       Model Name
+//                     </th>
+//                   )}
+//                   {showCol("show_model_no") && (
+//                     <th className="px-4 py-3 border border-gray-200 bg-gray-50">
+//                       Model No
+//                     </th>
+//                   )}
+//                   {showCol("show_unit_price") && (
+//                     <th className="px-4 py-3 text-right border border-gray-200 bg-gray-50">
+//                       Unit Price
+//                     </th>
+//                   )}
+//                   {showCol("show_invoice_no") && (
+//                     <th className="px-4 py-3 border border-gray-200 bg-gray-50">
+//                       Invoice No
+//                     </th>
+//                   )}
+//                   {showCol("show_invoice_date") && (
+//                     <th className="px-4 py-3 border border-gray-200 bg-gray-50">
+//                       Invoice Date
+//                     </th>
+//                   )}
+//                   {showCol("show_invoice_qty") && (
+//                     <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
+//                       Inv Qty
+//                     </th>
+//                   )}
+//                   {showCol("show_invoice_amount") && (
+//                     <th className="px-4 py-3 text-right border border-gray-200 bg-gray-50">
+//                       Inv Amount
+//                     </th>
+//                   )}
+//                   {showCol("show_inward_status") && (
+//                     <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
+//                       Inward Status
+//                     </th>
+//                   )}
+//                   {showCol("show_cancel_reason") && (
+//                     <th className="px-4 py-3 border border-gray-200 bg-gray-50">
+//                       Cancel Reason
+//                     </th>
+//                   )}
+//                   {showCol("show_grpo_qty") && (
+//                     <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
+//                       GRPO Qty
+//                     </th>
+//                   )}
+//                   {showCol("show_grpo_pending_qty") && (
+//                     <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
+//                       Pending Qty
+//                     </th>
+//                   )}
+//                   {showCol("show_grpo_pending_amount") && (
+//                     <th className="px-4 py-3 text-right border border-gray-200 bg-gray-50">
+//                       Pending Amt
+//                     </th>
+//                   )}
+//                   {showCol("show_discrepancy_amount") && (
+//                     <th className="px-4 py-3 text-right border border-gray-200 bg-gray-50">
+//                       Discrepancy Amt
+//                     </th>
+//                   )}
+//                   {showCol("show_refund_discrepancy") && (
+//                     <th className="px-4 py-3 text-right border border-gray-200 bg-gray-50">
+//                       Refund Amt
+//                     </th>
+//                   )}
+//                   {showCol("show_tracking_id") && (
+//                     <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
+//                       Tracking ID
+//                     </th>
+//                   )}
+//                   {showCol("show_delivery_status") && (
+//                     <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
+//                       Invoice Status
+//                     </th>
+//                   )}
+//                   {showCol("show_delivery_date") && (
+//                     <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
+//                       Del Date
+//                     </th>
+//                   )}
+//                   <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50 z-30">
+//                     Actions
+//                   </th>
 //                 </tr>
-//               ) : (
-//                 shipments.map((ship, index) => {
-//                   if (!ship) return null;
-//                   const badgeStyle = getBadgeStyle(ship.delivery_status);
-//                   const inwardStatus = computeInwardStatus(ship);
-
-//                   // 🔥 STRICT LOCK LOGIC 🔥
-//                   const isLocked =
-//                     (ship.delivery_status === "Delivered" ||
-//                       ship.delivery_status === "Cancelled" ||
-//                       manuallyLockedRows[ship.id]) &&
-//                     !unlockedRows[ship.id];
-
-//                   return (
-//                     <tr
-//                       key={ship.id}
-//                       className="hover:bg-blue-50/20 transition-colors group"
+//               </thead>
+//               <tbody className="bg-white">
+//                 {shipments.length === 0 ? (
+//                   <tr>
+//                     <td
+//                       colSpan="30"
+//                       className="p-16 text-center border border-gray-200"
 //                     >
-//                       {role === "ADMIN" && (
-//                         <td className="px-4 py-3 text-center border border-gray-200">
-//                           <input
-//                             type="checkbox"
-//                             checked={selectedIds.includes(ship.id)}
-//                             onChange={() => handleRowSelect(ship.id)}
-//                             className="w-4 h-4 rounded border-gray-300 text-[#e67e22] focus:ring-[#e67e22] cursor-pointer"
-//                           />
-//                         </td>
-//                       )}
-//                       <td className="px-4 py-3 text-center border border-gray-200 text-gray-500 font-medium text-xs">
-//                         {((currentPage - 1) * 50 + index + 1)
-//                           .toString()
-//                           .padStart(2, "0")}
-//                       </td>
+//                       <div className="flex flex-col items-center justify-center">
+//                         <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3 border border-gray-100">
+//                           <i className="fas fa-inbox text-2xl text-gray-300"></i>
+//                         </div>
+//                         <p className="font-bold text-[13px] text-slate-600">
+//                           No Shipments Found
+//                         </p>
+//                       </div>
+//                     </td>
+//                   </tr>
+//                 ) : (
+//                   shipments.map((ship, index) => {
+//                     if (!ship) return null;
+//                     const badgeStyle = getBadgeStyle(ship.delivery_status);
+//                     const inwardStatus = computeInwardStatus(ship);
+//                     const isLocked =
+//                       (ship.delivery_status === "Delivered" ||
+//                         ship.delivery_status === "Cancelled" ||
+//                         manuallyLockedRows[ship.id]) &&
+//                       !unlockedRows[ship.id];
 
-//                       {showCol("show_order_id") && (
-//                         <td className="px-4 py-3 border border-gray-200 font-semibold text-[#e67e22] tracking-wide">
-//                           {ship?.order_id || "-"}
+//                     return (
+//                       <tr
+//                         key={ship.id}
+//                         className="hover:bg-blue-50/30 transition-colors group"
+//                       >
+//                         {role === "ADMIN" && (
+//                           <td className="px-4 py-3 text-center border border-gray-200">
+//                             <input
+//                               type="checkbox"
+//                               checked={selectedIds.includes(ship.id)}
+//                               onChange={() => handleRowSelect(ship.id)}
+//                               className="w-4 h-4 rounded border-gray-300 text-[#e67e22] focus:ring-[#e67e22] cursor-pointer"
+//                             />
+//                           </td>
+//                         )}
+//                         {/* S.NO */}
+//                         <td className="px-4 py-3 text-center border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+//                           {((currentPage - 1) * 50 + index + 1)
+//                             .toString()
+//                             .padStart(2, "0")}
 //                         </td>
-//                       )}
-//                       {showCol("show_txn_date") && (
-//                         <td className="px-4 py-3 border border-gray-200 text-slate-600">
-//                           {formatDate(ship?.txn_date)}
-//                         </td>
-//                       )}
-//                       {showCol("show_firm") && (
-//                         <td className="px-4 py-3 border border-gray-200 font-medium text-slate-700">
-//                           {ship?.firm || "-"}
-//                         </td>
-//                       )}
-//                       {showCol("show_location") && (
-//                         <td className="px-4 py-3 border border-gray-200 text-slate-600">
-//                           {ship?.location || "-"}
-//                         </td>
-//                       )}
 
-//                       {showCol("show_seller_name") && (
-//                         <td className="px-4 py-3 border border-gray-200 font-medium text-slate-700">
-//                           {ship?.seller_name || "-"}
-//                         </td>
-//                       )}
-//                       {showCol("show_seller_gstn") && (
-//                         <td className="px-4 py-3 border border-gray-200 font-mono text-xs text-slate-500">
-//                           {ship?.seller_gstn || "-"}
-//                         </td>
-//                       )}
+//                         {/* DATA CELLS WITH UNIFORM FONT */}
+//                         {showCol("show_order_id") && (
+//                           <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-800 font-bold">
+//                             {ship?.order_id || "-"}
+//                           </td>
+//                         )}
+//                         {showCol("show_txn_date") && (
+//                           <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+//                             {formatDate(ship?.txn_date)}
+//                           </td>
+//                         )}
+//                         {showCol("show_firm") && (
+//                           <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+//                             {ship?.firm || "-"}
+//                           </td>
+//                         )}
+//                         {showCol("show_location") && (
+//                           <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+//                             {ship?.location || "-"}
+//                           </td>
+//                         )}
 
-//                       {showCol("show_asin_fsn") && (
-//                         <td className="px-4 py-3 border border-gray-200 font-mono font-bold text-slate-700">
-//                           {ship?.asin_fsn || "-"}
-//                         </td>
-//                       )}
-//                       {showCol("show_model_name") && (
-//                         <td
-//                           className="px-4 py-3 border border-gray-200 font-medium text-slate-700"
-//                           title={ship?.model_name}
-//                         >
-//                           {ship?.model_name || "-"}
-//                         </td>
-//                       )}
-//                       {showCol("show_model_no") && (
-//                         <td className="px-4 py-3 border border-gray-200 text-slate-600">
-//                           {ship?.model_no || "-"}
-//                         </td>
-//                       )}
-//                       {showCol("show_unit_price") && (
-//                         <td className="px-4 py-3 border border-gray-200 text-right text-slate-600 text-xs">
-//                           ₹
-//                           {parseFloat(ship?.unit_price || 0).toLocaleString(
-//                             "en-IN",
-//                           )}
-//                         </td>
-//                       )}
+//                         {showCol("show_seller_name") && (
+//                           <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+//                             {ship?.seller_name || "-"}
+//                           </td>
+//                         )}
+//                         {showCol("show_seller_gstn") && (
+//                           <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-500 font-mono tracking-wider">
+//                             {ship?.seller_gstn || "-"}
+//                           </td>
+//                         )}
 
-//                       {showCol("show_invoice_no") && (
-//                         <td className="px-4 py-3 border border-gray-200 font-bold text-slate-800">
-//                           {ship?.invoice_no || "-"}
-//                         </td>
-//                       )}
-//                       {showCol("show_invoice_date") && (
-//                         <td className="px-4 py-3 border border-gray-200 text-slate-600">
-//                           {formatDate(ship?.invoice_date)}
-//                         </td>
-//                       )}
-//                       {showCol("show_invoice_qty") && (
-//                         <td className="px-4 py-3 border border-gray-200 text-center font-bold text-slate-700">
-//                           {ship?.invoice_qty || "-"}
-//                         </td>
-//                       )}
-//                       {showCol("show_invoice_amount") && (
-//                         <td className="px-4 py-3 border border-gray-200 text-right font-bold text-slate-700">
-//                           ₹
-//                           {parseFloat(ship?.invoice_amount || 0).toLocaleString(
-//                             "en-IN",
-//                           )}
-//                         </td>
-//                       )}
-
-//                       {/* NEW MATRIX COLUMNS */}
-//                       {showCol("show_inward_status") && (
-//                         <td className="px-4 py-3 border border-gray-200 text-center">
-//                           <span
-//                             className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest border border-dashed ${getInwardBadgeStyle(inwardStatus)}`}
+//                         {showCol("show_asin_fsn") && (
+//                           <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-bold font-mono">
+//                             {ship?.asin_fsn || "-"}
+//                           </td>
+//                         )}
+//                         {showCol("show_model_name") && (
+//                           <td
+//                             className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium"
+//                             title={ship?.model_name}
 //                           >
-//                             {inwardStatus}
-//                           </span>
-//                         </td>
-//                       )}
-//                       {showCol("show_cancel_reason") && (
-//                         <td className="px-4 py-3 border border-gray-200 text-xs text-slate-600">
-//                           <div
-//                             className="truncate max-w-[150px]"
+//                             {ship?.model_name || "-"}
+//                           </td>
+//                         )}
+//                         {showCol("show_model_no") && (
+//                           <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+//                             {ship?.model_no || "-"}
+//                           </td>
+//                         )}
+
+//                         {showCol("show_unit_price") && (
+//                           <td className="px-4 py-3 text-right border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+//                             ₹
+//                             {parseFloat(ship?.unit_price || 0).toLocaleString(
+//                               "en-IN",
+//                             )}
+//                           </td>
+//                         )}
+
+//                         {showCol("show_invoice_no") && (
+//                           <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-800 font-bold">
+//                             {ship?.invoice_no || "-"}
+//                           </td>
+//                         )}
+//                         {showCol("show_invoice_date") && (
+//                           <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+//                             {formatDate(ship?.invoice_date)}
+//                           </td>
+//                         )}
+//                         {showCol("show_invoice_qty") && (
+//                           <td className="px-4 py-3 text-center border border-gray-200 whitespace-nowrap text-[13px] text-slate-800 font-bold">
+//                             {ship?.invoice_qty || "-"}
+//                           </td>
+//                         )}
+//                         {showCol("show_invoice_amount") && (
+//                           <td className="px-4 py-3 text-right border border-gray-200 whitespace-nowrap text-[13px] text-slate-800 font-bold">
+//                             ₹
+//                             {parseFloat(
+//                               ship?.invoice_amount || 0,
+//                             ).toLocaleString("en-IN")}
+//                           </td>
+//                         )}
+
+//                         {/* METRICS & STATUS */}
+//                         {showCol("show_inward_status") && (
+//                           <td className="px-4 py-3 border border-gray-200 text-center whitespace-nowrap">
+//                             <span
+//                               className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest border border-dashed ${getInwardBadgeStyle(inwardStatus)}`}
+//                             >
+//                               {inwardStatus}
+//                             </span>
+//                           </td>
+//                         )}
+//                         {showCol("show_cancel_reason") && (
+//                           <td
+//                             className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium max-w-[150px] truncate"
 //                             title={ship?.cancel_reason}
 //                           >
 //                             {ship?.cancel_reason || "-"}
+//                           </td>
+//                         )}
+//                         {showCol("show_grpo_qty") && (
+//                           <td className="px-4 py-3 border border-gray-200 text-center whitespace-nowrap text-[13px] text-slate-800 font-bold">
+//                             {ship?.grpo_qty || 0}
+//                           </td>
+//                         )}
+//                         {showCol("show_grpo_pending_qty") && (
+//                           <td className="px-4 py-3 border border-gray-200 text-center whitespace-nowrap text-[13px] text-amber-600 font-bold">
+//                             {ship?.grpo_pending_qty || 0}
+//                           </td>
+//                         )}
+//                         {showCol("show_grpo_pending_amount") && (
+//                           <td className="px-4 py-3 border border-gray-200 text-right whitespace-nowrap text-[13px] text-slate-700 font-medium">
+//                             ₹{formatIndianNumber(ship?.grpo_pending_amount)}
+//                           </td>
+//                         )}
+//                         {showCol("show_discrepancy_amount") && (
+//                           <td className="px-4 py-3 border border-gray-200 text-right whitespace-nowrap text-[13px] text-rose-500 font-medium">
+//                             ₹{formatIndianNumber(ship?.discrepancy_amount)}
+//                           </td>
+//                         )}
+//                         {showCol("show_refund_discrepancy") && (
+//                           <td className="px-4 py-3 border border-gray-200 text-right whitespace-nowrap text-[13px] text-slate-700 font-medium">
+//                             ₹
+//                             {formatIndianNumber(
+//                               ship?.refund_discrepancy_amount,
+//                             )}
+//                           </td>
+//                         )}
+
+//                         {showCol("show_tracking_id") && (
+//                           <td className="px-4 py-3 border border-gray-200 text-center whitespace-nowrap text-[13px] text-[#1677ff] font-bold font-mono uppercase">
+//                             {ship?.tracking_id || "-"}
+//                           </td>
+//                         )}
+
+//                         {showCol("show_delivery_status") && (
+//                           <td className="px-4 py-3 border border-gray-200 text-center whitespace-nowrap">
+//                             <span
+//                               className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold tracking-widest uppercase border border-dashed ${badgeStyle.bg}`}
+//                             >
+//                               <span
+//                                 className={`w-1.5 h-1.5 rounded-full ${badgeStyle.dot}`}
+//                               ></span>
+//                               {ship.delivery_status || "Pending"}
+//                             </span>
+//                           </td>
+//                         )}
+//                         {showCol("show_delivery_date") && (
+//                           <td className="px-4 py-3 border border-gray-200 text-center whitespace-nowrap text-[13px] text-slate-700 font-medium">
+//                             {formatDate(ship.delivery_date)}
+//                           </td>
+//                         )}
+
+//                         {/* ACTIONS: EYE BUTTON REMOVED */}
+//                         <td className="px-4 py-3 border border-gray-200 text-center bg-white z-10 whitespace-nowrap">
+//                           <div className="flex items-center justify-center gap-2 transition-opacity">
+//                             {isLocked ? (
+//                               <div className="flex items-center gap-2">
+//                                 <span className="px-2 py-1 bg-slate-100 text-slate-400 rounded text-[9px] font-bold uppercase tracking-widest flex items-center">
+//                                   <i className="fas fa-lock mr-1"></i> Locked
+//                                 </span>
+//                                 {role === "ADMIN" && (
+//                                   <button
+//                                     onClick={() =>
+//                                       setUnlockedRows((prev) => ({
+//                                         ...prev,
+//                                         [ship.id]: true,
+//                                       }))
+//                                     }
+//                                     title="Unlock Row for Update"
+//                                     className="w-8 h-8 rounded-md bg-white border border-gray-200 text-amber-500 hover:text-amber-600 flex items-center justify-center shadow-sm transition"
+//                                   >
+//                                     <i className="fas fa-unlock-alt text-[12px]"></i>
+//                                   </button>
+//                                 )}
+//                               </div>
+//                             ) : (
+//                               <button
+//                                 onClick={() => handleUpdateClick(ship)}
+//                                 title="Update Status & Reason"
+//                                 className="px-3 py-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-md text-[10px] font-bold uppercase tracking-widest hover:bg-emerald-100 shadow-sm transition flex items-center gap-1.5"
+//                               >
+//                                 <i className="fas fa-sync-alt"></i> Update
+//                               </button>
+//                             )}
+
+//                             {role === "ADMIN" && (
+//                               <>
+//                                 <button
+//                                   onClick={() => handleEditClick(ship)}
+//                                   title="Full Edit Record"
+//                                   className="w-8 h-8 rounded-md bg-white border border-gray-200 text-blue-500 hover:bg-blue-50 flex items-center justify-center shadow-sm transition"
+//                                 >
+//                                   <i className="fas fa-pen text-[12px]"></i>
+//                                 </button>
+//                                 <button
+//                                   onClick={() => handleDelete(ship.id)}
+//                                   title="Delete Record"
+//                                   className="w-8 h-8 rounded-md bg-white border border-gray-200 text-red-500 hover:bg-red-50 flex items-center justify-center shadow-sm transition"
+//                                 >
+//                                   <i className="fas fa-trash-alt text-[12px]"></i>
+//                                 </button>
+//                               </>
+//                             )}
 //                           </div>
 //                         </td>
-//                       )}
-//                       {showCol("show_grpo_qty") && (
-//                         <td className="px-4 py-3 border border-gray-200 text-center font-bold text-slate-700">
-//                           {ship?.grpo_qty || 0}
-//                         </td>
-//                       )}
-//                       {showCol("show_grpo_pending_qty") && (
-//                         <td className="px-4 py-3 border border-gray-200 text-center font-bold text-amber-600">
-//                           {ship?.grpo_pending_qty || 0}
-//                         </td>
-//                       )}
-//                       {showCol("show_grpo_pending_amount") && (
-//                         <td className="px-4 py-3 border border-gray-200 text-right font-medium text-slate-600">
-//                           ₹{formatIndianNumber(ship?.grpo_pending_amount)}
-//                         </td>
-//                       )}
-//                       {showCol("show_discrepancy_amount") && (
-//                         <td className="px-4 py-3 border border-gray-200 text-right font-medium text-rose-500">
-//                           ₹{formatIndianNumber(ship?.discrepancy_amount)}
-//                         </td>
-//                       )}
-//                       {showCol("show_refund_discrepancy") && (
-//                         <td className="px-4 py-3 border border-gray-200 text-right font-medium text-slate-600">
-//                           ₹{formatIndianNumber(ship?.refund_discrepancy_amount)}
-//                         </td>
-//                       )}
-
-//                       {showCol("show_tracking_id") && (
-//                         <td className="px-4 py-3 border border-gray-200 text-center font-mono font-bold text-slate-700 text-xs uppercase">
-//                           {ship?.tracking_id || "-"}
-//                         </td>
-//                       )}
-
-//                       {showCol("show_delivery_status") && (
-//                         <td className="px-4 py-3 border border-gray-200 text-center">
-//                           <span
-//                             className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold tracking-widest uppercase border border-dashed ${badgeStyle.bg}`}
-//                           >
-//                             <span
-//                               className={`w-1.5 h-1.5 rounded-full ${badgeStyle.dot}`}
-//                             ></span>
-//                             {ship.delivery_status || "Pending"}
-//                           </span>
-//                         </td>
-//                       )}
-//                       {showCol("show_delivery_date") && (
-//                         <td className="px-4 py-3 border border-gray-200 text-center text-slate-600">
-//                           {formatDate(ship.delivery_date)}
-//                         </td>
-//                       )}
-
-//                       {/* 🔥 FIXED ACTION BUTTONS (ALWAYS VISIBLE) 🔥 */}
-//                       <td className="px-4 py-3 border border-gray-200 text-center">
-//                         <div className="flex items-center justify-center gap-2 transition-opacity">
-//                           {isLocked ? (
-//                             // 🔒 LOCKED STATE
-//                             <div className="flex items-center gap-2">
-//                               <span className="px-2 py-1 bg-slate-100 text-slate-400 rounded text-[9px] font-bold uppercase tracking-widest flex items-center">
-//                                 <i className="fas fa-lock mr-1"></i> Locked
-//                               </span>
-//                               {role === "ADMIN" && (
-//                                 <button
-//                                   onClick={() =>
-//                                     setUnlockedRows((prev) => ({
-//                                       ...prev,
-//                                       [ship.id]: true,
-//                                     }))
-//                                   }
-//                                   title="Unlock Row for Update"
-//                                   className="w-8 h-8 rounded-md bg-white border border-gray-200 text-amber-500 hover:text-amber-600 flex items-center justify-center shadow-sm transition"
-//                                 >
-//                                   <i className="fas fa-unlock-alt text-[12px]"></i>
-//                                 </button>
-//                               )}
-//                             </div>
-//                           ) : (
-//                             // ✅ 2. UPDATE BUTTON (Both Admin & User)
-//                             <button
-//                               onClick={() => handleUpdateClick(ship)}
-//                               title="Update Status & Reason"
-//                               className="px-3 py-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-md text-[10px] font-bold uppercase tracking-widest hover:bg-emerald-100 shadow-sm transition flex items-center gap-1.5"
-//                             >
-//                               <i className="fas fa-sync-alt"></i> Update
-//                             </button>
-//                           )}
-
-//                           {/* 3 & 4. ADMIN FULL EDIT & DELETE */}
-//                           {role === "ADMIN" && (
-//                             <>
-//                               <button
-//                                 onClick={() => handleEditClick(ship)}
-//                                 title="Full Edit Record"
-//                                 className="w-8 h-8 rounded-md bg-white border border-gray-200 text-blue-500 hover:bg-blue-50 flex items-center justify-center shadow-sm transition"
-//                               >
-//                                 <i className="fas fa-pen text-[12px]"></i>
-//                               </button>
-//                               <button
-//                                 onClick={() => handleDelete(ship.id)}
-//                                 title="Delete Record"
-//                                 className="w-8 h-8 rounded-md bg-white border border-gray-200 text-red-500 hover:bg-red-50 flex items-center justify-center shadow-sm transition"
-//                               >
-//                                 <i className="fas fa-trash-alt text-[12px]"></i>
-//                               </button>
-//                             </>
-//                           )}
-//                         </div>
-//                       </td>
-//                     </tr>
-//                   );
-//                 })
-//               )}
-//             </tbody>
-//           </table>
+//                       </tr>
+//                     );
+//                   })
+//                 )}
+//               </tbody>
+//             </table>
+//           )}
 //         </div>
 
 //         {/* PAGINATION FOOTER */}
-//         <div className="flex flex-col md:flex-row justify-between items-center px-6 py-4 bg-gray-50/50 border-t border-gray-100 gap-4">
+//         <div className="flex flex-col md:flex-row justify-between items-center px-6 py-4 bg-gray-50/50 border-t border-gray-100 gap-4 flex-shrink-0">
 //           <div className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">
 //             Total Records:{" "}
 //             <span className="text-[#e67e22] text-[13px]">{totalRecords}</span>
@@ -1378,11 +1387,7 @@
 //                     setCurrentPage(p);
 //                     setJumpPage("");
 //                   } else
-//                     Swal.fire(
-//                       "Invalid",
-//                       `Enter valid page (1-${maxPages})`,
-//                       "info",
-//                     );
+//                     Swal.fire(`Enter a valid page between 1 and ${maxPages}`);
 //                 }}
 //                 className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 text-[12px] font-bold rounded-r-md transition"
 //               >
@@ -1395,7 +1400,7 @@
 
 //       {/* ================= ALL MODALS ================= */}
 
-//       {/* 1. FILTER MODAL */}
+//       {/* 1. FILTER MODAL WITH 3-TYPE DATE LOGIC */}
 //       {isFilterModalOpen && (
 //         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in">
 //           <div className="bg-white p-8 rounded-2xl w-full max-w-3xl shadow-2xl animate-in zoom-in-95">
@@ -1410,7 +1415,25 @@
 //                 <i className="fas fa-times text-sm"></i>
 //               </button>
 //             </div>
+
 //             <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+//               <div>
+//                 <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">
+//                   Date Filter Type
+//                 </label>
+//                 <select
+//                   value={filters.date_type}
+//                   onChange={(e) =>
+//                     setFilters({ ...filters, date_type: e.target.value })
+//                   }
+//                   className="w-full bg-white border border-gray-200 rounded-xl p-2.5 outline-none focus:border-[#e67e22] focus:ring-4 focus:ring-blue-50 text-sm transition"
+//                 >
+//                   <option value="txn_date">Order Date</option>
+//                   <option value="invoice_date">Invoice Date</option>
+//                   <option value="delivery_date">Delivery Date</option>
+//                 </select>
+//               </div>
+
 //               {["start_date", "end_date"].map((field) => (
 //                 <div key={field}>
 //                   <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">
@@ -1426,6 +1449,7 @@
 //                   />
 //                 </div>
 //               ))}
+
 //               <div>
 //                 <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">
 //                   Delivery Status
@@ -1496,10 +1520,12 @@
 //                 />
 //               </div>
 //             </div>
+
 //             <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
 //               <button
 //                 onClick={() => {
 //                   setFilters({
+//                     date_type: "txn_date",
 //                     start_date: "",
 //                     end_date: "",
 //                     order_id: "",
@@ -1521,7 +1547,7 @@
 //                   setCurrentPage(1);
 //                   setFilterModalOpen(false);
 //                 }}
-//                 className="px-8 py-2.5 bg-[#e67e22] text-white text-[11px] font-bold uppercase tracking-widest rounded-xl shadow-md shadow-blue-500/20 hover:bg-blue-600 transition"
+//                 className="px-8 py-2.5 bg-[#e67e22] text-white text-[11px] font-bold uppercase tracking-widest rounded-xl shadow-md shadow-[#e67e22]/20 hover:bg-[#d35400] transition"
 //               >
 //                 Apply Filters
 //               </button>
@@ -1579,7 +1605,7 @@
 //               </button>
 //               <button
 //                 onClick={handleSaveViewSettings}
-//                 className="px-8 py-2.5 bg-[#e67e22] text-white text-[11px] font-bold uppercase tracking-widest rounded-xl shadow-md shadow-blue-500/20 hover:bg-blue-600 transition"
+//                 className="px-8 py-2.5 bg-[#e67e22] text-white text-[11px] font-bold uppercase tracking-widest rounded-xl shadow-md shadow-[#e67e22]/20 hover:bg-[#d35400] transition"
 //               >
 //                 Apply Layout
 //               </button>
@@ -1629,7 +1655,7 @@
 //               <button
 //                 type="submit"
 //                 disabled={loading}
-//                 className="w-full bg-[#e67e22] hover:bg-blue-600 text-white py-3.5 rounded-xl font-bold uppercase tracking-widest text-[12px] transition shadow-md shadow-blue-500/20 disabled:opacity-50 flex items-center justify-center gap-2"
+//                 className="w-full bg-[#e67e22] hover:bg-[#d35400] text-white py-3.5 rounded-xl font-bold uppercase tracking-widest text-[12px] transition shadow-md shadow-[#e67e22]/20 disabled:opacity-50 flex items-center justify-center gap-2"
 //               >
 //                 {loading ? (
 //                   <>
@@ -1644,7 +1670,7 @@
 //         </div>
 //       )}
 
-//       {/* 🔥 4. USER/ADMIN UPDATE MODAL (REMARKS, STATUS, DATES) 🔥 */}
+//       {/* 4. USER/ADMIN UPDATE MODAL (SINGLE ROW) */}
 //       {isUpdateModalOpen && (
 //         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in">
 //           <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95">
@@ -1709,7 +1735,7 @@
 //               </div>
 //               <div>
 //                 <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">
-//                   Cancel Reason / Action Remarks
+//                   Cancel Reason / Remarks
 //                 </label>
 //                 <textarea
 //                   name="cancel_reason"
@@ -1725,7 +1751,6 @@
 //                   className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#e67e22] focus:ring-4 focus:ring-blue-50 outline-none text-[13px] font-medium text-slate-800 transition custom-scrollbar"
 //                 />
 //               </div>
-
 //               <div className="pt-2 flex justify-end gap-3 border-t border-gray-100">
 //                 <button
 //                   type="button"
@@ -1737,7 +1762,7 @@
 //                 <button
 //                   type="submit"
 //                   disabled={loading}
-//                   className="px-8 py-2.5 bg-[#e67e22] hover:bg-blue-600 text-white font-bold text-[11px] uppercase tracking-widest rounded-xl shadow-md shadow-blue-500/20 transition"
+//                   className="px-8 py-2.5 bg-[#e67e22] hover:bg-[#d35400] text-white font-bold text-[11px] uppercase tracking-widest rounded-xl shadow-md shadow-[#e67e22]/20 transition"
 //                 >
 //                   Save Updates
 //                 </button>
@@ -1747,17 +1772,17 @@
 //         </div>
 //       )}
 
-//       {/* 🔥 PREMIUM BULK UPDATE MODAL 🔥 */}
+//       {/* 🔥 5. PREMIUM BULK UPDATE MODAL 🔥 */}
 //       {isBulkUpdateModalOpen && (
 //         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in">
 //           <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95">
 //             <div className="px-6 py-5 border-b border-gray-100 bg-white flex justify-between items-center">
 //               <div>
 //                 <h3 className="text-[18px] font-bold text-slate-800 tracking-tight">
-//                   Bulk Update Status
+//                   Update Shipment Data
 //                 </h3>
 //                 <p className="text-[11px] text-[#e67e22] font-bold tracking-widest mt-1 uppercase">
-//                   Updating {selectedIds.length} Selected Records
+//                   UPDATING {selectedIds.length} SELECTED RECORDS
 //                 </p>
 //               </div>
 //               <button
@@ -1808,7 +1833,23 @@
 //                   className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#e67e22] focus:ring-4 focus:ring-blue-50 outline-none text-[13px] font-bold text-slate-800 transition"
 //                 />
 //               </div>
-
+//               <div>
+//                 <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">
+//                   Cancel Reason / Remarks
+//                 </label>
+//                 <textarea
+//                   value={bulkUpdateData.cancel_reason}
+//                   onChange={(e) =>
+//                     setBulkUpdateData({
+//                       ...bulkUpdateData,
+//                       cancel_reason: e.target.value,
+//                     })
+//                   }
+//                   rows="3"
+//                   placeholder="If cancelled, provide details..."
+//                   className="w-full bg-white border border-gray-200 p-2.5 rounded-xl focus:border-[#e67e22] focus:ring-4 focus:ring-blue-50 outline-none text-[13px] font-medium text-slate-800 transition custom-scrollbar"
+//                 />
+//               </div>
 //               <div className="pt-2 flex justify-end gap-3 border-t border-gray-100">
 //                 <button
 //                   type="button"
@@ -1820,7 +1861,7 @@
 //                 <button
 //                   type="submit"
 //                   disabled={loading}
-//                   className="px-8 py-2.5 bg-[#e67e22] hover:bg-blue-600 text-white font-bold text-[11px] uppercase tracking-widest rounded-xl shadow-md shadow-blue-500/20 transition"
+//                   className="px-8 py-2.5 bg-[#e67e22] hover:bg-[#d35400] text-white font-bold text-[11px] uppercase tracking-widest rounded-xl shadow-md shadow-[#e67e22]/20 transition"
 //                 >
 //                   Save Updates
 //                 </button>
@@ -1830,7 +1871,7 @@
 //         </div>
 //       )}
 
-//       {/* 5. MAIN FORM MODAL (CREATE / ADMIN EDIT) */}
+//       {/* 6. MAIN FORM MODAL (CREATE / ADMIN EDIT) */}
 //       {isFormModalOpen && (
 //         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in">
 //           <div className="bg-white rounded-2xl w-full max-w-5xl shadow-2xl flex flex-col max-h-[95vh] animate-in zoom-in-95 overflow-hidden">
@@ -1869,7 +1910,7 @@
 //                   <button
 //                     onClick={handleFetchOrderData}
 //                     disabled={loading}
-//                     className="bg-slate-900 hover:bg-slate-50 hover:text-slate-900 text-white text-[12px] font-bold uppercase tracking-widest px-8 py-3 rounded-xl shadow-md transition w-full md:w-auto flex items-center justify-center gap-2 border border-slate-900"
+//                     className="bg-slate-900 hover:bg-slate-800 text-white text-[12px] font-bold uppercase tracking-widest px-8 py-3 rounded-xl shadow-md transition w-full md:w-auto flex items-center justify-center gap-2 border border-slate-900"
 //                   >
 //                     {loading ? (
 //                       <i className="fas fa-spinner fa-spin"></i>
@@ -2021,7 +2062,7 @@
 //                       </div>
 //                     </div>
 
-//                     <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+//                     <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
 //                       <div>
 //                         <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-1.5">
 //                           Invoice Qty
@@ -2048,7 +2089,7 @@
 //                           className="w-full bg-white border border-gray-200 p-2.5 rounded-xl outline-none focus:border-[#e67e22] focus:ring-4 focus:ring-blue-50 text-[13px] font-bold transition text-right"
 //                         />
 //                       </div>
-//                       <div className="md:col-span-2">
+//                       <div>
 //                         <label className="block text-[11px] font-bold text-indigo-600 uppercase tracking-widest mb-1.5">
 //                           Tracking ID / AWB
 //                         </label>
@@ -2058,7 +2099,7 @@
 //                           value={item.tracking_id || ""}
 //                           onChange={(e) => handleItemChange(index, e)}
 //                           placeholder="e.g. AWB12345678"
-//                           className="w-full bg-indigo-50/30 border border-indigo-200 p-2.5 rounded-xl outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 text-[13px] font-bold uppercase tracking-wider placeholder:text-slate-400 placeholder:normal-case transition"
+//                           className="w-full bg-indigo-50/30 border border-indigo-200 p-2.5 rounded-xl outline-none focus:border-[#1677ff] focus:ring-4 focus:ring-indigo-100 text-[13px] font-bold uppercase tracking-wider placeholder:text-slate-400 placeholder:normal-case transition"
 //                         />
 //                       </div>
 //                     </div>
@@ -2067,7 +2108,7 @@
 //               </form>
 //             </div>
 
-//             <div className="px-8 py-5 border-t border-gray-100 bg-white flex justify-end gap-3 rounded-b-2xl">
+//             <div className="flex justify-end gap-3 px-8 py-5 border-t border-gray-100 bg-white flex justify-end gap-3 rounded-b-2xl">
 //               <button
 //                 type="button"
 //                 onClick={() => setFormModalOpen(false)}
@@ -2079,7 +2120,7 @@
 //                 type="submit"
 //                 form="shipmentForm"
 //                 disabled={loading || itemsData.length === 0}
-//                 className="px-8 py-2.5 bg-[#e67e22] hover:bg-blue-600 text-white text-[11px] font-bold uppercase tracking-widest rounded-xl shadow-md shadow-blue-500/20 transition disabled:opacity-50"
+//                 className="px-8 py-2.5 bg-[#e67e22] hover:bg-[#d35400] text-white text-[11px] font-bold uppercase tracking-widest rounded-xl shadow-md shadow-[#e67e22]/20 transition disabled:opacity-50"
 //               >
 //                 {loading
 //                   ? "Processing..."
@@ -2091,85 +2132,13 @@
 //           </div>
 //         </div>
 //       )}
-
-//       {/* 6. VIEW SUMMARY MODAL */}
-//       {isViewSummaryModalOpen && viewSummaryData && (
-//         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in">
-//           <div className="bg-white rounded-2xl w-full max-w-5xl shadow-2xl flex flex-col max-h-[90vh] animate-in zoom-in-95 overflow-hidden">
-//             <div className="flex justify-between items-center px-8 py-5 border-b border-gray-100 bg-white rounded-t-2xl">
-//               <h2 className="text-[18px] font-bold text-slate-800 tracking-tight flex items-center gap-3">
-//                 <i className="fas fa-chart-pie text-[#e67e22]"></i> Order
-//                 Summary:{" "}
-//                 <span className="font-mono text-[#e67e22]">
-//                   {viewSummaryData.order_id}
-//                 </span>
-//               </h2>
-//               <div className="flex items-center gap-5">
-//                 <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
-//                   Status:
-//                   <span
-//                     className={`px-2.5 py-1 rounded-md border border-dashed ${getBadgeStyle(viewSummaryData.order_status).bg}`}
-//                   >
-//                     {viewSummaryData.order_status}
-//                   </span>
-//                 </span>
-//                 <button
-//                   onClick={() => {
-//                     setViewSummaryModalOpen(false);
-//                     setViewSummaryData(null);
-//                   }}
-//                   className="w-8 h-8 rounded-full bg-gray-50 hover:bg-gray-100 text-gray-500 flex items-center justify-center transition"
-//                 >
-//                   <i className="fas fa-times text-sm"></i>
-//                 </button>
-//               </div>
-//             </div>
-
-//             <div className="px-8 py-8 overflow-y-auto custom-scrollbar bg-[#f0f2f5]/40">
-//               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-//                 {[
-//                   { label: "Order ID", value: viewSummaryData.order_id },
-//                   {
-//                     label: "Txn Date",
-//                     value: formatDate(viewSummaryData.txn_date),
-//                   },
-//                   { label: "ASIN/FSN", value: viewSummaryData.asin_fsn },
-//                   { label: "Model No", value: viewSummaryData.model_no || "-" },
-//                   { label: "Card No.", value: viewSummaryData.card_no || "-" },
-//                   {
-//                     label: "Placed By",
-//                     value: viewSummaryData.placed_by || "-",
-//                   },
-//                   { label: "Order Qty", value: viewSummaryData.order_qty || 0 },
-//                   {
-//                     label: "Order Amount",
-//                     value: `₹ ${(viewSummaryData.order_amount || 0).toLocaleString("en-IN")}`,
-//                   },
-//                 ].map((item, i) => (
-//                   <div
-//                     key={i}
-//                     className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm"
-//                   >
-//                     <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
-//                       {item.label}
-//                     </label>
-//                     <div className="text-[14px] font-bold text-slate-800 truncate">
-//                       {item.value}
-//                     </div>
-//                   </div>
-//                 ))}
-//               </div>
-//             </div>
-//           </div>
-//         </div>
-//       )}
 //     </div>
 //   );
 // }
-
 import React, { useState, useEffect, useRef } from "react";
 import api from "../api/axios";
 import Swal from "sweetalert2";
+import SmartLoader from "../components/SmartLoader";
 
 // --- 🛠️ HELPER FUNCTIONS ---
 const formatDate = (dateStr) => {
@@ -2325,7 +2294,7 @@ export default function InvoiceShipment() {
   const [isViewSetupModalOpen, setViewSetupModalOpen] = useState(false);
   const [isFilterModalOpen, setFilterModalOpen] = useState(false);
   const [isUpdateModalOpen, setUpdateModalOpen] = useState(false);
-  const [isBulkUpdateModalOpen, setBulkUpdateModalOpen] = useState(false); // 🔥 BULK UPDATE MODAL STATE 🔥
+  const [isBulkUpdateModalOpen, setBulkUpdateModalOpen] = useState(false);
 
   const [editMode, setEditMode] = useState(false);
   const [editId, setEditId] = useState(null);
@@ -2365,11 +2334,10 @@ export default function InvoiceShipment() {
     cancel_reason: "",
   });
 
-  // 🔥 BULK UPDATE DATA STATE 🔥
   const [bulkUpdateData, setBulkUpdateData] = useState({
     delivery_status: "Pending",
     delivery_date: "",
-    cancel_reason: "", // Added Cancel Reason for Bulk Update
+    cancel_reason: "",
   });
 
   // --- DYNAMIC COLUMN VISIBILITY STATE ---
@@ -2419,6 +2387,7 @@ export default function InvoiceShipment() {
 
   const fetchData = async () => {
     try {
+      setLoading(true); // 🚀 LOADER ON 🚀
       const queryParams = new URLSearchParams(
         Object.entries(filters).filter(([_, v]) => v !== ""),
       );
@@ -2439,6 +2408,8 @@ export default function InvoiceShipment() {
         setViewSettings(settingsRes.data);
     } catch (error) {
       console.error("Fetch data error:", error);
+    } finally {
+      setLoading(false); // 🚀 LOADER OFF 🚀
     }
   };
 
@@ -2450,24 +2421,18 @@ export default function InvoiceShipment() {
     role === "ADMIN" ? true : viewSettings[colName] !== false;
 
   const computeInwardStatus = (row) => {
-    // 1. Pehle Cancel check karega
     if (
       row.invoice_status?.toLowerCase() === "cancel" ||
       row.delivery_status?.toLowerCase() === "cancelled"
     ) {
       return "Cancel";
     }
-
-    // 2. 🔥 NAYA LOGIC: Ab ye direct backend ki 'inward_status' field ko padhega 🔥
     if (row.inward_status?.toLowerCase() === "done") {
-      return "Done"; // Ya aap chaho toh "Completed" bhi return karwa sakte ho
+      return "Done";
     }
-
-    // 3. Purana fallback logic (just for safety)
     if (row.grpo_qty > 0) {
       return "Completed";
     }
-
     return "Pending";
   };
 
@@ -2605,7 +2570,6 @@ export default function InvoiceShipment() {
     }
   };
 
-  // 🔥 UPDATED BULK SUBMIT LOGIC WITH CANCEL REASON 🔥
   const handleBulkUpdateSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -2945,7 +2909,7 @@ export default function InvoiceShipment() {
 
   const getInwardBadgeStyle = (status) => {
     if (status === "Cancel") return "bg-red-50 text-red-700 border-red-300";
-    if (status === "Completed")
+    if (status === "Completed" || status === "Done")
       return "bg-emerald-50 text-emerald-700 border-emerald-300";
     return "bg-amber-50 text-amber-700 border-amber-300";
   };
@@ -3066,7 +3030,6 @@ export default function InvoiceShipment() {
               </button>
             )}
 
-            {/* 🔥 BULK UPDATE BUTTON FIXED 🔥 */}
             {selectedIds.length > 0 && (
               <button
                 onClick={() => setBulkUpdateModalOpen(true)}
@@ -3092,414 +3055,423 @@ export default function InvoiceShipment() {
           </div>
         </div>
 
-        {/* 🔥 UNIFORM DATA TABLE 🔥 */}
-        <div className="overflow-auto custom-table-scrollbar w-full flex-1 border-t border-gray-200 min-h-[60vh] max-h-[calc(100vh-180px)]">
-          <table className="w-full text-left min-w-max border-collapse whitespace-nowrap">
-            <thead className="bg-gray-50 text-slate-600 text-[11px] font-bold uppercase tracking-wider sticky top-0 z-20 shadow-sm">
-              <tr>
-                {role === "ADMIN" && (
-                  <th className="px-4 py-3 text-center border border-gray-200 w-12 bg-gray-50">
-                    <input
-                      type="checkbox"
-                      onChange={() => handleSelectAll(shipments)}
-                      checked={
-                        shipments.length > 0 &&
-                        selectedIds.length === shipments.length
-                      }
-                      className="w-4 h-4 rounded border-gray-300 text-[#e67e22] focus:ring-[#e67e22] cursor-pointer"
-                    />
-                  </th>
-                )}
-                <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
-                  #
-                </th>
-                {showCol("show_order_id") && (
-                  <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-                    Order ID
-                  </th>
-                )}
-                {showCol("show_txn_date") && (
-                  <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-                    Txn Date
-                  </th>
-                )}
-                {showCol("show_firm") && (
-                  <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-                    Firm
-                  </th>
-                )}
-                {showCol("show_location") && (
-                  <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-                    Location
-                  </th>
-                )}
-                {showCol("show_seller_name") && (
-                  <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-                    Seller Name
-                  </th>
-                )}
-                {showCol("show_seller_gstn") && (
-                  <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-                    Seller GSTN
-                  </th>
-                )}
-                {showCol("show_asin_fsn") && (
-                  <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-                    ASIN/FSN
-                  </th>
-                )}
-                {showCol("show_model_name") && (
-                  <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-                    Model Name
-                  </th>
-                )}
-                {showCol("show_model_no") && (
-                  <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-                    Model No
-                  </th>
-                )}
-                {showCol("show_unit_price") && (
-                  <th className="px-4 py-3 text-right border border-gray-200 bg-gray-50">
-                    Unit Price
-                  </th>
-                )}
-                {showCol("show_invoice_no") && (
-                  <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-                    Invoice No
-                  </th>
-                )}
-                {showCol("show_invoice_date") && (
-                  <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-                    Invoice Date
-                  </th>
-                )}
-                {showCol("show_invoice_qty") && (
-                  <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
-                    Inv Qty
-                  </th>
-                )}
-                {showCol("show_invoice_amount") && (
-                  <th className="px-4 py-3 text-right border border-gray-200 bg-gray-50">
-                    Inv Amount
-                  </th>
-                )}
-                {showCol("show_inward_status") && (
-                  <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
-                    Inward Status
-                  </th>
-                )}
-                {showCol("show_cancel_reason") && (
-                  <th className="px-4 py-3 border border-gray-200 bg-gray-50">
-                    Cancel Reason
-                  </th>
-                )}
-                {showCol("show_grpo_qty") && (
-                  <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
-                    GRPO Qty
-                  </th>
-                )}
-                {showCol("show_grpo_pending_qty") && (
-                  <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
-                    Pending Qty
-                  </th>
-                )}
-                {showCol("show_grpo_pending_amount") && (
-                  <th className="px-4 py-3 text-right border border-gray-200 bg-gray-50">
-                    Pending Amt
-                  </th>
-                )}
-                {showCol("show_discrepancy_amount") && (
-                  <th className="px-4 py-3 text-right border border-gray-200 bg-gray-50">
-                    Discrepancy Amt
-                  </th>
-                )}
-                {showCol("show_refund_discrepancy") && (
-                  <th className="px-4 py-3 text-right border border-gray-200 bg-gray-50">
-                    Refund Amt
-                  </th>
-                )}
-                {showCol("show_tracking_id") && (
-                  <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
-                    Tracking ID
-                  </th>
-                )}
-                {showCol("show_delivery_status") && (
-                  <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
-                    Invoice Status
-                  </th>
-                )}
-                {showCol("show_delivery_date") && (
-                  <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50">
-                    Del Date
-                  </th>
-                )}
-                <th className="px-4 py-3 text-center border border-gray-200 bg-gray-50 z-30">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white">
-              {shipments.length === 0 ? (
+        {/* 🔥 COMPACT DATA TABLE WITH LARGE FONTS AND TEXT-WRAP 🔥 */}
+        <div className="overflow-auto custom-table-scrollbar w-full flex-1 border-t border-gray-200 min-h-[65vh] max-h-[calc(100vh-100px)] bg-white relative">
+          {loading ? (
+            <div className="w-full flex flex-col items-center justify-center min-h-[50vh]">
+              <SmartLoader />
+            </div>
+          ) : (
+            <table className="w-full text-left min-w-max border-collapse">
+              {/* ⚠️ Added whitespace-nowrap ONLY to thead so headers don't break weirdly */}
+              <thead className="bg-gray-50 text-slate-600 text-[11px] font-bold uppercase tracking-wider sticky top-0 z-20 shadow-sm whitespace-nowrap">
                 <tr>
-                  <td
-                    colSpan="30"
-                    className="p-16 text-center border border-gray-200"
-                  >
-                    <div className="flex flex-col items-center justify-center">
-                      <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3 border border-gray-100">
-                        <i className="fas fa-inbox text-2xl text-gray-300"></i>
-                      </div>
-                      <p className="font-bold text-[13px] text-slate-600">
-                        No Shipments Found
-                      </p>
-                    </div>
-                  </td>
+                  {role === "ADMIN" && (
+                    <th className="px-3 py-2 text-center border border-gray-200 w-12 bg-gray-50">
+                      <input
+                        type="checkbox"
+                        onChange={() => handleSelectAll(shipments)}
+                        checked={
+                          shipments.length > 0 &&
+                          selectedIds.length === shipments.length
+                        }
+                        className="w-4 h-4 rounded border-gray-300 text-[#e67e22] focus:ring-[#e67e22] cursor-pointer"
+                      />
+                    </th>
+                  )}
+                  <th className="px-3 py-2 text-center border border-gray-200 bg-gray-50">
+                    #
+                  </th>
+                  {showCol("show_order_id") && (
+                    <th className="px-3 py-2 border border-gray-200 bg-gray-50">
+                      Order ID
+                    </th>
+                  )}
+                  {showCol("show_txn_date") && (
+                    <th className="px-3 py-2 border border-gray-200 bg-gray-50">
+                      Txn Date
+                    </th>
+                  )}
+                  {showCol("show_firm") && (
+                    <th className="px-3 py-2 border border-gray-200 bg-gray-50">
+                      Firm
+                    </th>
+                  )}
+                  {showCol("show_location") && (
+                    <th className="px-3 py-2 border border-gray-200 bg-gray-50">
+                      Location
+                    </th>
+                  )}
+                  {showCol("show_seller_name") && (
+                    <th className="px-3 py-2 border border-gray-200 bg-gray-50">
+                      Seller Name
+                    </th>
+                  )}
+                  {showCol("show_seller_gstn") && (
+                    <th className="px-3 py-2 border border-gray-200 bg-gray-50">
+                      Seller GSTN
+                    </th>
+                  )}
+                  {showCol("show_asin_fsn") && (
+                    <th className="px-3 py-2 border border-gray-200 bg-gray-50">
+                      ASIN/FSN
+                    </th>
+                  )}
+                  {showCol("show_model_name") && (
+                    <th className="px-3 py-2 border border-gray-200 bg-gray-50">
+                      Model Name
+                    </th>
+                  )}
+                  {showCol("show_model_no") && (
+                    <th className="px-3 py-2 border border-gray-200 bg-gray-50">
+                      Model No
+                    </th>
+                  )}
+                  {showCol("show_unit_price") && (
+                    <th className="px-3 py-2 text-right border border-gray-200 bg-gray-50">
+                      Unit Price
+                    </th>
+                  )}
+                  {showCol("show_invoice_no") && (
+                    <th className="px-3 py-2 border border-gray-200 bg-gray-50">
+                      Invoice No
+                    </th>
+                  )}
+                  {showCol("show_invoice_date") && (
+                    <th className="px-3 py-2 border border-gray-200 bg-gray-50">
+                      Invoice Date
+                    </th>
+                  )}
+                  {showCol("show_invoice_qty") && (
+                    <th className="px-3 py-2 text-center border border-gray-200 bg-gray-50">
+                      Inv Qty
+                    </th>
+                  )}
+                  {showCol("show_invoice_amount") && (
+                    <th className="px-3 py-2 text-right border border-gray-200 bg-gray-50">
+                      Inv Amount
+                    </th>
+                  )}
+                  {showCol("show_inward_status") && (
+                    <th className="px-3 py-2 text-center border border-gray-200 bg-gray-50">
+                      Inward Status
+                    </th>
+                  )}
+                  {showCol("show_cancel_reason") && (
+                    <th className="px-3 py-2 border border-gray-200 bg-gray-50">
+                      Cancel Reason
+                    </th>
+                  )}
+                  {showCol("show_grpo_qty") && (
+                    <th className="px-3 py-2 text-center border border-gray-200 bg-gray-50">
+                      GRPO Qty
+                    </th>
+                  )}
+                  {showCol("show_grpo_pending_qty") && (
+                    <th className="px-3 py-2 text-center border border-gray-200 bg-gray-50">
+                      Pending Qty
+                    </th>
+                  )}
+                  {showCol("show_grpo_pending_amount") && (
+                    <th className="px-3 py-2 text-right border border-gray-200 bg-gray-50">
+                      Pending Amt
+                    </th>
+                  )}
+                  {showCol("show_discrepancy_amount") && (
+                    <th className="px-3 py-2 text-right border border-gray-200 bg-gray-50">
+                      Discrepancy Amt
+                    </th>
+                  )}
+                  {showCol("show_refund_discrepancy") && (
+                    <th className="px-3 py-2 text-right border border-gray-200 bg-gray-50">
+                      Refund Amt
+                    </th>
+                  )}
+                  {showCol("show_tracking_id") && (
+                    <th className="px-3 py-2 text-center border border-gray-200 bg-gray-50">
+                      Tracking ID
+                    </th>
+                  )}
+                  {showCol("show_delivery_status") && (
+                    <th className="px-3 py-2 text-center border border-gray-200 bg-gray-50">
+                      Invoice Status
+                    </th>
+                  )}
+                  {showCol("show_delivery_date") && (
+                    <th className="px-3 py-2 text-center border border-gray-200 bg-gray-50">
+                      Del Date
+                    </th>
+                  )}
+                  <th className="px-3 py-2 text-center border border-gray-200 bg-gray-50 z-30">
+                    Actions
+                  </th>
                 </tr>
-              ) : (
-                shipments.map((ship, index) => {
-                  if (!ship) return null;
-                  const badgeStyle = getBadgeStyle(ship.delivery_status);
-                  const inwardStatus = computeInwardStatus(ship);
-                  const isLocked =
-                    (ship.delivery_status === "Delivered" ||
-                      ship.delivery_status === "Cancelled" ||
-                      manuallyLockedRows[ship.id]) &&
-                    !unlockedRows[ship.id];
-
-                  return (
-                    <tr
-                      key={ship.id}
-                      className="hover:bg-blue-50/30 transition-colors group"
+              </thead>
+              <tbody className="bg-white">
+                {shipments.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan="30"
+                      className="p-16 text-center border border-gray-200"
                     >
-                      {role === "ADMIN" && (
-                        <td className="px-4 py-3 text-center border border-gray-200">
-                          <input
-                            type="checkbox"
-                            checked={selectedIds.includes(ship.id)}
-                            onChange={() => handleRowSelect(ship.id)}
-                            className="w-4 h-4 rounded border-gray-300 text-[#e67e22] focus:ring-[#e67e22] cursor-pointer"
-                          />
-                        </td>
-                      )}
-                      {/* S.NO */}
-                      <td className="px-4 py-3 text-center border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                        {((currentPage - 1) * 50 + index + 1)
-                          .toString()
-                          .padStart(2, "0")}
-                      </td>
-
-                      {/* DATA CELLS WITH UNIFORM FONT */}
-                      {showCol("show_order_id") && (
-                        <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-800 font-bold">
-                          {ship?.order_id || "-"}
-                        </td>
-                      )}
-                      {showCol("show_txn_date") && (
-                        <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                          {formatDate(ship?.txn_date)}
-                        </td>
-                      )}
-                      {showCol("show_firm") && (
-                        <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                          {ship?.firm || "-"}
-                        </td>
-                      )}
-                      {showCol("show_location") && (
-                        <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                          {ship?.location || "-"}
-                        </td>
-                      )}
-
-                      {showCol("show_seller_name") && (
-                        <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                          {ship?.seller_name || "-"}
-                        </td>
-                      )}
-                      {showCol("show_seller_gstn") && (
-                        <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-500 font-mono tracking-wider">
-                          {ship?.seller_gstn || "-"}
-                        </td>
-                      )}
-
-                      {showCol("show_asin_fsn") && (
-                        <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-bold font-mono">
-                          {ship?.asin_fsn || "-"}
-                        </td>
-                      )}
-                      {showCol("show_model_name") && (
-                        <td
-                          className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium"
-                          title={ship?.model_name}
-                        >
-                          {ship?.model_name || "-"}
-                        </td>
-                      )}
-                      {showCol("show_model_no") && (
-                        <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                          {ship?.model_no || "-"}
-                        </td>
-                      )}
-
-                      {showCol("show_unit_price") && (
-                        <td className="px-4 py-3 text-right border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                          ₹
-                          {parseFloat(ship?.unit_price || 0).toLocaleString(
-                            "en-IN",
-                          )}
-                        </td>
-                      )}
-
-                      {showCol("show_invoice_no") && (
-                        <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-800 font-bold">
-                          {ship?.invoice_no || "-"}
-                        </td>
-                      )}
-                      {showCol("show_invoice_date") && (
-                        <td className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                          {formatDate(ship?.invoice_date)}
-                        </td>
-                      )}
-                      {showCol("show_invoice_qty") && (
-                        <td className="px-4 py-3 text-center border border-gray-200 whitespace-nowrap text-[13px] text-slate-800 font-bold">
-                          {ship?.invoice_qty || "-"}
-                        </td>
-                      )}
-                      {showCol("show_invoice_amount") && (
-                        <td className="px-4 py-3 text-right border border-gray-200 whitespace-nowrap text-[13px] text-slate-800 font-bold">
-                          ₹
-                          {parseFloat(ship?.invoice_amount || 0).toLocaleString(
-                            "en-IN",
-                          )}
-                        </td>
-                      )}
-
-                      {/* METRICS & STATUS */}
-                      {showCol("show_inward_status") && (
-                        <td className="px-4 py-3 border border-gray-200 text-center whitespace-nowrap">
-                          <span
-                            className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest border border-dashed ${getInwardBadgeStyle(inwardStatus)}`}
-                          >
-                            {inwardStatus}
-                          </span>
-                        </td>
-                      )}
-                      {showCol("show_cancel_reason") && (
-                        <td 
-                          className="px-4 py-3 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium max-w-[150px] truncate"
-                          title={ship?.cancel_reason}
-                        >
-                          {ship?.cancel_reason || "-"}
-                        </td>
-                      )}
-                      {showCol("show_grpo_qty") && (
-                        <td className="px-4 py-3 border border-gray-200 text-center whitespace-nowrap text-[13px] text-slate-800 font-bold">
-                          {ship?.grpo_qty || 0}
-                        </td>
-                      )}
-                      {showCol("show_grpo_pending_qty") && (
-                        <td className="px-4 py-3 border border-gray-200 text-center whitespace-nowrap text-[13px] text-amber-600 font-bold">
-                          {ship?.grpo_pending_qty || 0}
-                        </td>
-                      )}
-                      {showCol("show_grpo_pending_amount") && (
-                        <td className="px-4 py-3 border border-gray-200 text-right whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                          ₹{formatIndianNumber(ship?.grpo_pending_amount)}
-                        </td>
-                      )}
-                      {showCol("show_discrepancy_amount") && (
-                        <td className="px-4 py-3 border border-gray-200 text-right whitespace-nowrap text-[13px] text-rose-500 font-medium">
-                          ₹{formatIndianNumber(ship?.discrepancy_amount)}
-                        </td>
-                      )}
-                      {showCol("show_refund_discrepancy") && (
-                        <td className="px-4 py-3 border border-gray-200 text-right whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                          ₹{formatIndianNumber(ship?.refund_discrepancy_amount)}
-                        </td>
-                      )}
-
-                      {showCol("show_tracking_id") && (
-                        <td className="px-4 py-3 border border-gray-200 text-center whitespace-nowrap text-[13px] text-[#1677ff] font-bold font-mono uppercase">
-                          {ship?.tracking_id || "-"}
-                        </td>
-                      )}
-
-                      {showCol("show_delivery_status") && (
-                        <td className="px-4 py-3 border border-gray-200 text-center whitespace-nowrap">
-                          <span
-                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold tracking-widest uppercase border border-dashed ${badgeStyle.bg}`}
-                          >
-                            <span
-                              className={`w-1.5 h-1.5 rounded-full ${badgeStyle.dot}`}
-                            ></span>
-                            {ship.delivery_status || "Pending"}
-                          </span>
-                        </td>
-                      )}
-                      {showCol("show_delivery_date") && (
-                        <td className="px-4 py-3 border border-gray-200 text-center whitespace-nowrap text-[13px] text-slate-700 font-medium">
-                          {formatDate(ship.delivery_date)}
-                        </td>
-                      )}
-
-                      {/* ACTIONS: EYE BUTTON REMOVED */}
-                      <td className="px-4 py-3 border border-gray-200 text-center bg-white z-10 whitespace-nowrap">
-                        <div className="flex items-center justify-center gap-2 transition-opacity">
-                          {isLocked ? (
-                            <div className="flex items-center gap-2">
-                              <span className="px-2 py-1 bg-slate-100 text-slate-400 rounded text-[9px] font-bold uppercase tracking-widest flex items-center">
-                                <i className="fas fa-lock mr-1"></i> Locked
-                              </span>
-                              {role === "ADMIN" && (
-                                <button
-                                  onClick={() =>
-                                    setUnlockedRows((prev) => ({
-                                      ...prev,
-                                      [ship.id]: true,
-                                    }))
-                                  }
-                                  title="Unlock Row for Update"
-                                  className="w-8 h-8 rounded-md bg-white border border-gray-200 text-amber-500 hover:text-amber-600 flex items-center justify-center shadow-sm transition"
-                                >
-                                  <i className="fas fa-unlock-alt text-[12px]"></i>
-                                </button>
-                              )}
-                            </div>
-                          ) : (
-                            <button
-                              onClick={() => handleUpdateClick(ship)}
-                              title="Update Status & Reason"
-                              className="px-3 py-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-md text-[10px] font-bold uppercase tracking-widest hover:bg-emerald-100 shadow-sm transition flex items-center gap-1.5"
-                            >
-                              <i className="fas fa-sync-alt"></i> Update
-                            </button>
-                          )}
-
-                          {role === "ADMIN" && (
-                            <>
-                              <button
-                                onClick={() => handleEditClick(ship)}
-                                title="Full Edit Record"
-                                className="w-8 h-8 rounded-md bg-white border border-gray-200 text-blue-500 hover:bg-blue-50 flex items-center justify-center shadow-sm transition"
-                              >
-                                <i className="fas fa-pen text-[12px]"></i>
-                              </button>
-                              <button
-                                onClick={() => handleDelete(ship.id)}
-                                title="Delete Record"
-                                className="w-8 h-8 rounded-md bg-white border border-gray-200 text-red-500 hover:bg-red-50 flex items-center justify-center shadow-sm transition"
-                              >
-                                <i className="fas fa-trash-alt text-[12px]"></i>
-                              </button>
-                            </>
-                          )}
+                      <div className="flex flex-col items-center justify-center">
+                        <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3 border border-gray-100">
+                          <i className="fas fa-inbox text-2xl text-gray-300"></i>
                         </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                        <p className="font-bold text-[13px] text-slate-600">
+                          No Shipments Found
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  shipments.map((ship, index) => {
+                    if (!ship) return null;
+                    const badgeStyle = getBadgeStyle(ship.delivery_status);
+                    const inwardStatus = computeInwardStatus(ship);
+                    const isLocked =
+                      (ship.delivery_status === "Delivered" ||
+                        ship.delivery_status === "Cancelled" ||
+                        manuallyLockedRows[ship.id]) &&
+                      !unlockedRows[ship.id];
+
+                    return (
+                      <tr
+                        key={ship.id}
+                        className="hover:bg-blue-50/40 transition-colors group"
+                      >
+                        {role === "ADMIN" && (
+                          <td className="px-3 py-1.5 text-center border border-gray-200 whitespace-nowrap">
+                            <input
+                              type="checkbox"
+                              checked={selectedIds.includes(ship.id)}
+                              onChange={() => handleRowSelect(ship.id)}
+                              className="w-4 h-4 rounded border-gray-300 text-[#e67e22] focus:ring-[#e67e22] cursor-pointer"
+                            />
+                          </td>
+                        )}
+                        {/* S.NO */}
+                        <td className="px-3 py-1.5 text-center border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+                          {((currentPage - 1) * 50 + index + 1)
+                            .toString()
+                            .padStart(2, "0")}
+                        </td>
+
+                        {/* DATA CELLS - Removed truncate, added whitespace-normal and break-words for long text */}
+                        {showCol("show_order_id") && (
+                          <td className="px-3 py-1.5 border border-gray-200 whitespace-nowrap text-[13px] text-slate-800 font-bold">
+                            {ship?.order_id || "-"}
+                          </td>
+                        )}
+                        {showCol("show_txn_date") && (
+                          <td className="px-3 py-1.5 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+                            {formatDate(ship?.txn_date)}
+                          </td>
+                        )}
+
+                        {/* 🔥 TEXT WRAP APPLIED HERE 🔥 */}
+                        {showCol("show_firm") && (
+                          <td className="px-3 py-1.5 border border-gray-200 whitespace-normal min-w-[120px] max-w-[200px] break-words leading-tight text-[13px] text-slate-700 font-medium">
+                            {ship?.firm || "-"}
+                          </td>
+                        )}
+                        {showCol("show_location") && (
+                          <td className="px-3 py-1.5 border border-gray-200 whitespace-normal min-w-[100px] max-w-[150px] break-words leading-tight text-[13px] text-slate-700 font-medium">
+                            {ship?.location || "-"}
+                          </td>
+                        )}
+                        {showCol("show_seller_name") && (
+                          <td className="px-3 py-1.5 border border-gray-200 whitespace-normal min-w-[120px] max-w-[200px] break-words leading-tight text-[13px] text-slate-700 font-medium">
+                            {ship?.seller_name || "-"}
+                          </td>
+                        )}
+
+                        {showCol("show_seller_gstn") && (
+                          <td className="px-3 py-1.5 border border-gray-200 whitespace-nowrap text-[13px] text-slate-500 font-mono tracking-wider">
+                            {ship?.seller_gstn || "-"}
+                          </td>
+                        )}
+                        {showCol("show_asin_fsn") && (
+                          <td className="px-3 py-1.5 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-bold font-mono">
+                            {ship?.asin_fsn || "-"}
+                          </td>
+                        )}
+
+                        {/* 🔥 TEXT WRAP APPLIED HERE (Removed truncate) 🔥 */}
+                        {showCol("show_model_name") && (
+                          <td
+                            className="px-3 py-1.5 border border-gray-200 whitespace-normal min-w-[150px] max-w-[250px] break-words leading-snug text-[13px] text-slate-700 font-medium"
+                            title={ship?.model_name}
+                          >
+                            {ship?.model_name || "-"}
+                          </td>
+                        )}
+
+                        {showCol("show_model_no") && (
+                          <td className="px-3 py-1.5 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+                            {ship?.model_no || "-"}
+                          </td>
+                        )}
+                        {showCol("show_unit_price") && (
+                          <td className="px-3 py-1.5 text-right border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+                            ₹
+                            {parseFloat(ship?.unit_price || 0).toLocaleString(
+                              "en-IN",
+                            )}
+                          </td>
+                        )}
+                        {showCol("show_invoice_no") && (
+                          <td className="px-3 py-1.5 border border-gray-200 whitespace-nowrap text-[13px] text-slate-800 font-bold">
+                            {ship?.invoice_no || "-"}
+                          </td>
+                        )}
+                        {showCol("show_invoice_date") && (
+                          <td className="px-3 py-1.5 border border-gray-200 whitespace-nowrap text-[13px] text-slate-700 font-medium">
+                            {formatDate(ship?.invoice_date)}
+                          </td>
+                        )}
+                        {showCol("show_invoice_qty") && (
+                          <td className="px-3 py-1.5 text-center border border-gray-200 whitespace-nowrap text-[13px] text-slate-800 font-bold">
+                            {ship?.invoice_qty || "-"}
+                          </td>
+                        )}
+                        {showCol("show_invoice_amount") && (
+                          <td className="px-3 py-1.5 text-right border border-gray-200 whitespace-nowrap text-[13px] text-slate-800 font-bold">
+                            ₹
+                            {parseFloat(
+                              ship?.invoice_amount || 0,
+                            ).toLocaleString("en-IN")}
+                          </td>
+                        )}
+                        {showCol("show_inward_status") && (
+                          <td className="px-3 py-1.5 border border-gray-200 text-center whitespace-nowrap">
+                            <span
+                              className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest border border-dashed ${getInwardBadgeStyle(inwardStatus)}`}
+                            >
+                              {inwardStatus}
+                            </span>
+                          </td>
+                        )}
+
+                        {/* 🔥 TEXT WRAP APPLIED HERE (Removed truncate) 🔥 */}
+                        {showCol("show_cancel_reason") && (
+                          <td
+                            className="px-3 py-1.5 border border-gray-200 whitespace-normal min-w-[120px] max-w-[200px] break-words leading-snug text-[13px] text-slate-700 font-medium"
+                            title={ship?.cancel_reason}
+                          >
+                            {ship?.cancel_reason || "-"}
+                          </td>
+                        )}
+
+                        {showCol("show_grpo_qty") && (
+                          <td className="px-3 py-1.5 border border-gray-200 text-center whitespace-nowrap text-[13px] text-slate-800 font-bold">
+                            {ship?.grpo_qty || 0}
+                          </td>
+                        )}
+                        {showCol("show_grpo_pending_qty") && (
+                          <td className="px-3 py-1.5 border border-gray-200 text-center whitespace-nowrap text-[13px] text-amber-600 font-bold">
+                            {ship?.grpo_pending_qty || 0}
+                          </td>
+                        )}
+                        {showCol("show_grpo_pending_amount") && (
+                          <td className="px-3 py-1.5 border border-gray-200 text-right whitespace-nowrap text-[13px] text-slate-700 font-medium">
+                            ₹{formatIndianNumber(ship?.grpo_pending_amount)}
+                          </td>
+                        )}
+                        {showCol("show_discrepancy_amount") && (
+                          <td className="px-3 py-1.5 border border-gray-200 text-right whitespace-nowrap text-[13px] text-rose-500 font-medium">
+                            ₹{formatIndianNumber(ship?.discrepancy_amount)}
+                          </td>
+                        )}
+                        {showCol("show_refund_discrepancy") && (
+                          <td className="px-3 py-1.5 border border-gray-200 text-right whitespace-nowrap text-[13px] text-slate-700 font-medium">
+                            ₹
+                            {formatIndianNumber(
+                              ship?.refund_discrepancy_amount,
+                            )}
+                          </td>
+                        )}
+                        {showCol("show_tracking_id") && (
+                          <td className="px-3 py-1.5 border border-gray-200 text-center whitespace-nowrap text-[13px] text-[#1677ff] font-bold font-mono uppercase">
+                            {ship?.tracking_id || "-"}
+                          </td>
+                        )}
+                        {showCol("show_delivery_status") && (
+                          <td className="px-3 py-1.5 border border-gray-200 text-center whitespace-nowrap">
+                            <span
+                              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold tracking-widest uppercase border border-dashed ${badgeStyle.bg}`}
+                            >
+                              <span
+                                className={`w-1.5 h-1.5 rounded-full ${badgeStyle.dot}`}
+                              ></span>
+                              {ship.delivery_status || "Pending"}
+                            </span>
+                          </td>
+                        )}
+                        {showCol("show_delivery_date") && (
+                          <td className="px-3 py-1.5 border border-gray-200 text-center whitespace-nowrap text-[13px] text-slate-700 font-medium">
+                            {formatDate(ship.delivery_date)}
+                          </td>
+                        )}
+                        <td className="px-3 py-1.5 border border-gray-200 text-center bg-white z-10 whitespace-nowrap">
+                          <div className="flex items-center justify-center gap-2 transition-opacity">
+                            {isLocked ? (
+                              <div className="flex items-center gap-2">
+                                <span className="px-2 py-1 bg-slate-100 text-slate-400 rounded text-[9px] font-bold uppercase tracking-widest flex items-center">
+                                  <i className="fas fa-lock mr-1"></i> Locked
+                                </span>
+                                {role === "ADMIN" && (
+                                  <button
+                                    onClick={() =>
+                                      setUnlockedRows((prev) => ({
+                                        ...prev,
+                                        [ship.id]: true,
+                                      }))
+                                    }
+                                    title="Unlock Row for Update"
+                                    className="w-8 h-8 rounded-md bg-white border border-gray-200 text-amber-500 hover:text-amber-600 flex items-center justify-center shadow-sm transition"
+                                  >
+                                    <i className="fas fa-unlock-alt text-[12px]"></i>
+                                  </button>
+                                )}
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => handleUpdateClick(ship)}
+                                title="Update Status & Reason"
+                                className="px-3 py-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-md text-[10px] font-bold uppercase tracking-widest hover:bg-emerald-100 shadow-sm transition flex items-center gap-1.5"
+                              >
+                                <i className="fas fa-sync-alt"></i> Update
+                              </button>
+                            )}
+
+                            {role === "ADMIN" && (
+                              <>
+                                <button
+                                  onClick={() => handleEditClick(ship)}
+                                  title="Full Edit Record"
+                                  className="w-8 h-8 rounded-md bg-white border border-gray-200 text-blue-500 hover:bg-blue-50 flex items-center justify-center shadow-sm transition"
+                                >
+                                  <i className="fas fa-pen text-[12px]"></i>
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(ship.id)}
+                                  title="Delete Record"
+                                  className="w-8 h-8 rounded-md bg-white border border-gray-200 text-red-500 hover:bg-red-50 flex items-center justify-center shadow-sm transition"
+                                >
+                                  <i className="fas fa-trash-alt text-[12px]"></i>
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
 
         {/* PAGINATION FOOTER */}
@@ -4290,10 +4262,3 @@ export default function InvoiceShipment() {
     </div>
   );
 }
-
-
-
-
-
-
-
